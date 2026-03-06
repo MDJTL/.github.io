@@ -371,12 +371,21 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script>
-    // --------------- 仓库数据配置（已填好你的仓库信息，只需要替换Token）---------------
-    const REPO_CONFIG = {
-      readUrl: 'https://raw.githubusercontent.com/MDJTL/.github.io/main/store_data.json',
-      writeUrl: 'https://api.github.com/repos/MDJTL/.github.io/contents/store_data.json',
-      token: '' 
-    };
+    // --------------- 仓库数据配置（已填好你的仓库信息）---------------
+const REPO_CONFIG = {
+  readUrl: 'https://raw.githubusercontent.com/MDJTL/.github.io/main/store_data.json',
+  writeUrl: 'https://api.github.com/repos/MDJTL/.github.io/contents/store_data.json',
+  token: localStorage.getItem('github_token') || ''
+};
+
+// 页面加载时，如果没有token，就弹窗让用户输入
+if (!REPO_CONFIG.token) {
+  const token = prompt('请输入GitHub Token（用于数据同步）：');
+  if (token) {
+    localStorage.setItem('github_token', token);
+    window.location.reload();
+  }
+}
 
     // --------------- 系统配置（可修改这里的默认信息）---------------
     const SYSTEM_CONFIG = {
@@ -1464,3 +1473,4 @@ init();
   </script>
 </body>
 </html>
+
