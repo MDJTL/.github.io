@@ -3,7 +3,7 @@
     {
       "id": "admin_1",
       "username": "admin",
-      "password": "admin123",
+      "password": "admin8835865",
       "role": "admin",
       "expireDate": "2030-01-01",
       "status": "enable"
@@ -11,7 +11,7 @@
     {
       "username": "A00188",
       "password": "123456",
-      "expireDate": "2026-03-06",
+      "expireDate": "2026-03-31",
       "role": "user",
       "status": "enable",
       "id": "store_1"
@@ -26,8 +26,14 @@
     {
       "user": "admin",
       "action": "登录系统",
-      "time": "2026-03-07 00:36:21",
-      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+      "time": "2026-03-07 00:46:11",
+      "device": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/5"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:45:35",
+      "device": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/5"
     },
     {
       "user": "admin",
