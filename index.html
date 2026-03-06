@@ -371,15 +371,15 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script>
-    // --------------- Gist配置（替换成你自己的！）---------------
-    const GIST_CONFIG = {
-      // 替换成你的Gist Raw地址（从Raw按钮复制）
-      readUrl: 'https://gist.githubusercontent.com/你的用户名/你的GistID/raw/store_system_data.json',
-      // 替换成你的Gist API地址（格式：https://api.github.com/gists/你的GistID）
-      writeUrl: 'https://api.github.com/gists/你的GistID',
-      // 替换成你的GitHub Token（勾选gist权限）
-      token: '你的GitHub Token'
-    };
+    // --------------- 仓库数据配置（替换成你的！）---------------
+const REPO_CONFIG = {
+  // 替换成你的仓库地址：格式 https://raw.githubusercontent.com/用户名/仓库名/分支名/store_data.json
+  readUrl: 'https://raw.githubusercontent.com/你的GitHub用户名/你的仓库名/main/store_data.json',
+  // 替换成你的仓库API地址：格式 https://api.github.com/repos/用户名/仓库名/contents/store_data.json
+  writeUrl: 'https://api.github.com/repos/你的GitHub用户名/你的仓库名/contents/store_data.json',
+  // 你的GitHub Token（需要repo权限，生成地址：https://github.com/settings/tokens）
+  token: '你的GitHub Token'
+};
 
     // --------------- 系统配置（可修改这里的默认信息）---------------
     const SYSTEM_CONFIG = {
@@ -580,81 +580,79 @@
       // 只保留最近100条日志
       if (GLOBAL_DATA.useLog.length > 100) GLOBAL_DATA.useLog.pop();
       // 保存到Gist
-      await saveToGist();
+      await saveToRepo();
     }
 
-    // --------------- Gist数据同步函数 ---------------
-    // 从Gist加载数据
-    async function loadFromGist() {
-      try {
-        showSyncTip('正在同步最新数据...');
-        const response = await fetch(GIST_CONFIG.readUrl);
-        if (!response.ok) throw new Error('数据加载失败');
-        const data = await response.json();
-        GLOBAL_DATA = { ...GLOBAL_DATA, ...data };
-        // 确保有管理员账号
-        if (!GLOBAL_DATA.userList.some(u => u.role === 'admin')) {
-          GLOBAL_DATA.userList.push({
-            id: 'admin_1',
-            username: 'admin',
-            password: SYSTEM_CONFIG.adminDefaultPwd,
-            role: 'admin',
-            expireDate: formatDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10)),
-            status: 'enable'
-          });
-          await saveToGist();
-        }
-        showSyncTip('数据同步成功', 1500);
-        return true;
-      } catch (error) {
-        showToast('数据同步失败，使用本地缓存');
-        console.error('Gist加载失败:', error);
-        // 备用方案：使用本地存储
-        const localData = localStorage.getItem('store_system_backup');
-        if (localData) GLOBAL_DATA = JSON.parse(localData);
-        return false;
-      }
+    // --------------- 仓库数据同步函数 ---------------
+// 从仓库加载数据
+async function loadFromRepo() {
+  try {
+    showSyncTip('正在同步最新数据...');
+    const response = await fetch(REPO_CONFIG.readUrl);
+    if (!response.ok) throw new Error('数据加载失败');
+    const data = await response.json();
+    GLOBAL_DATA = { ...GLOBAL_DATA, ...data };
+    // 确保有管理员账号
+    if (!GLOBAL_DATA.userList.some(u => u.role === 'admin')) {
+      GLOBAL_DATA.userList.push({
+        id: 'admin_1',
+        username: 'admin',
+        password: 'admin123',
+        role: 'admin',
+        expireDate: '2030-01-01',
+        status: 'enable'
+      });
+      await saveToRepo();
     }
+    showSyncTip('数据同步成功', 1500);
+    return true;
+  } catch (error) {
+    showToast('同步失败，使用本地缓存');
+    console.error('仓库加载失败:', error);
+    // 备用：读取本地缓存
+    const localData = localStorage.getItem('store_data_backup');
+    if (localData) GLOBAL_DATA = JSON.parse(localData);
+    return false;
+  }
+}
 
-    // 保存数据到Gist
-    async function saveToGist() {
-      try {
-        showSyncTip('正在保存数据...');
-        // 备份到本地存储
-        localStorage.setItem('store_system_backup', JSON.stringify(GLOBAL_DATA));
-        
-        // 构建请求头
-        const headers = {
-          'Content-Type': 'application/json'
-        };
-        if (GIST_CONFIG.token) {
-          headers['Authorization'] = `token ${GIST_CONFIG.token}`;
-        }
+// 保存数据到仓库
+async function saveToRepo() {
+  try {
+    showSyncTip('正在保存数据到仓库...');
+    // 先备份到本地
+    localStorage.setItem('store_data_backup', JSON.stringify(GLOBAL_DATA));
+    
+    // 先获取文件的SHA（必须）
+    const shaResponse = await fetch(REPO_CONFIG.readUrl, {
+      headers: { 'Authorization': `token ${REPO_CONFIG.token}` }
+    });
+    const shaData = await shaResponse.json();
+    const sha = shaData.sha || '';
 
-        // 构建请求体
-        const body = JSON.stringify({
-          files: {
-            'store_system_data.json': {
-              content: JSON.stringify(GLOBAL_DATA, null, 2)
-            }
-          }
-        });
+    // 提交数据到仓库
+    const response = await fetch(REPO_CONFIG.writeUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${REPO_CONFIG.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: 'Update store data ' + new Date().toLocaleString(),
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(GLOBAL_DATA, null, 2)))),
+        sha: sha
+      })
+    });
 
-        const response = await fetch(GIST_CONFIG.writeUrl, {
-          method: 'PATCH',
-          headers: headers,
-          body: body
-        });
-
-        if (!response.ok) throw new Error('保存失败');
-        showSyncTip('数据保存成功', 1500);
-        return true;
-      } catch (error) {
-        showToast('数据保存失败，请检查网络或配置');
-        console.error('Gist保存失败:', error);
-        return false;
-      }
-    }
+    if (!response.ok) throw new Error('保存失败');
+    showSyncTip('数据保存成功，所有门店已同步', 2000);
+    return true;
+  } catch (error) {
+    showToast('保存失败，请检查Token权限');
+    console.error('仓库保存失败:', error);
+    return false;
+  }
+}
 
     // --------------- 登录相关 ---------------
     async function login() {
@@ -810,7 +808,7 @@
           const user = GLOBAL_DATA.userList.find(u => u.id === userId);
           if (user) {
             user.status = user.status === 'enable' ? 'disable' : 'enable';
-            await saveToGist();
+            await saveToRepo();
             renderUserList();
             showToast(`账号已${user.status === 'enable' ? '启用' : '禁用'}`);
           }
@@ -895,7 +893,7 @@
         showToast('门店账号新增成功');
       }
       // 保存到Gist
-      await saveToGist();
+      await saveToRepo();
       el.userModal.style.display = 'none';
       renderUserList();
     }
@@ -930,7 +928,7 @@
       const reader = new FileReader();
       reader.onload = async (e) => {
         GLOBAL_DATA.payQrcode = e.target.result;
-        await saveToGist();
+        await saveToRepo();
         loadQrcodePreview();
         showToast('收款二维码上传成功');
       };
@@ -945,7 +943,7 @@
         return;
       }
       GLOBAL_DATA.contactInfo = contact;
-      await saveToGist();
+      await saveToRepo();
       loadQrcodePreview();
       showToast('联系方式保存成功');
     }
@@ -977,7 +975,7 @@
         GLOBAL_DATA.userList[adminIndex].password = newPwd;
       }
       // 保存到Gist
-      await saveToGist();
+      await saveToRepo();
       el.changeAdminPwdModal.style.display = 'none';
       showToast('管理员密码修改成功，请重新登录');
       forceLogout();
@@ -1000,7 +998,7 @@
       if (storeIndex !== -1) {
         GLOBAL_DATA.userList[storeIndex].password = newPwd;
         // 保存到Gist
-        await saveToGist();
+        await saveToRepo();
         el.resetStorePwdModal.style.display = 'none';
         showToast('门店密码重置成功');
         renderUserList();
@@ -1061,7 +1059,7 @@
       el.renewalNoticeModal.style.display = 'flex';
       // 标记为已读
       GLOBAL_DATA.unreadRenewal = GLOBAL_DATA.unreadRenewal.filter(item => item.store !== log.store);
-      saveToGist();
+      saveToRepo();
     }
 
     // 确认续费
@@ -1092,7 +1090,7 @@
       GLOBAL_DATA.renewalLog.unshift(log);
       GLOBAL_DATA.unreadRenewal.push(log);
       // 保存到Gist
-      await saveToGist();
+      await saveToRepo();
       // 关闭弹窗，重新登录
       el.expirePayModal.style.display = 'none';
       showToast('续期申请已提交，请等待管理员确认');
@@ -1458,15 +1456,22 @@ function bindEvents() {
 
 // --------------- 初始化 ---------------
 async function init() {
-  // 先从Gist加载数据
-  await loadFromGist();
-  initLoginState();
+  // 先从仓库加载数据
+  await loadFromRepo();
   bindEvents();
-  showToast('系统加载完成');
+  showToast('系统加载完成，数据已同步');
 }
+
+// 替换所有saveToRepo调用为saveToRepo
+// 找到所有await saveToRepo()，替换成await saveToRepo()
+// 比如：
+// recordUseLog里的await saveToRepo() → await saveToRepo()
+// saveUser里的await saveToRepo() → await saveToRepo()
+// 所有地方都要替换！
 
 // 启动系统
 init();
   </script>
 </body>
 </html>
+
