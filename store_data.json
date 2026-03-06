@@ -25,6 +25,12 @@
   "useLog": [
     {
       "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:36:21",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
       "action": "核对商品：奥利奥可可脆卷（浓郁巧克力味）50g（条码：6901668936271，实到5件）",
       "time": "2026-03-07 00:28:40",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
