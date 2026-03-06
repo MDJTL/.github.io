@@ -11,7 +11,7 @@
     {
       "username": "A00188",
       "password": "123456",
-      "expireDate": "2026-03-08",
+      "expireDate": "2026-03-31",
       "role": "user",
       "status": "enable",
       "id": "store_1"
@@ -23,6 +23,24 @@
   "renewalLog": [],
   "unreadRenewal": [],
   "useLog": [
+    {
+      "user": "admin",
+      "action": "核对商品：奥利奥可可脆卷（浓郁巧克力味）50g（条码：6901668936271，实到5件）",
+      "time": "2026-03-07 00:28:40",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "上传配送单：配送收货单-明细数据.xls（共36个商品）",
+      "time": "2026-03-07 00:28:28",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:28:23",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
     {
       "user": "admin",
       "action": "登录系统",
