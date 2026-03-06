@@ -9,12 +9,12 @@
       "status": "enable"
     },
     {
-      "id": "store_1",
       "username": "A00188",
       "password": "123456",
+      "expireDate": "2026-03-08",
       "role": "user",
-      "expireDate": "2030-01-01",
-      "status": "enable"
+      "status": "enable",
+      "id": "store_1"
     }
   ],
   "payQrcode": "",
@@ -22,5 +22,12 @@
   "contactInfo": "电话13800000000",
   "renewalLog": [],
   "unreadRenewal": [],
-  "useLog": []
+  "useLog": [
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:16:40",
+      "device": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/5"
+    }
+  ]
 }
