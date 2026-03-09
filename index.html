@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>便利店点货系统（收费管理版）</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>便利店点货系统（实时同步版V2.4）</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
     body { background: #f5f5f5; min-height: 100vh; display: flex; flex-direction: column; }
-    /* 登录/注册页面样式 */
     .auth-container { width: 100%; max-width: 350px; margin: 50px auto; padding: 0 15px; }
     .auth-card { background: white; border-radius: 8px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .auth-title { font-size: 20px; font-weight: bold; color: #333; text-align: center; margin-bottom: 25px; }
@@ -21,15 +22,11 @@
     .auth-tip { text-align: center; color: #f5222d; font-size: 13px; margin-top: 15px; display: none; }
     .register-success { text-align: center; color: #00b42a; font-size: 14px; margin-top: 15px; display: none; }
     .register-info { background: #e6f7ff; padding: 10px; border-radius: 6px; margin-top: 15px; font-size: 14px; line-height: 1.6; display: none; }
-    /* 主页面样式 */
     .header { background: #1989fa; color: white; text-align: center; padding: 15px; font-size: 18px; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
     .user-info-bar { background: #e6f7ff; color: #1890ff; padding: 8px 15px; font-size: 13px; margin-top: 60px; display: flex; justify-content: space-between; align-items: center; }
     .expire-info { color: #ff7a45; font-weight: bold; }
     .expire-warning { color: #f5222d; font-weight: bold; animation: blink 1.5s infinite; }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
     .container { padding: 15px; flex: 1; }
     .card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .card-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -40,6 +37,10 @@
     .btn-danger { background: #f5222d; color: white; font-size: 13px; padding: 6px 12px; margin-top: 10px; }
     .scan-box { border: 2px dashed #1989fa; border-radius: 8px; padding: 30px 10px; text-align: center; color: #1989fa; margin: 15px 0; cursor: pointer; }
     .scan-icon { font-size: 40px; margin-bottom: 10px; }
+    #scanCamera { width: 100%; height: 350px; border-radius: 8px; overflow: hidden; display: none; margin: 15px 0; border: 1px solid #eee; }
+    .camera-control { display: flex; justify-content: center; gap: 15px; margin: 10px 0; }
+    .camera-btn { padding: 8px 20px; background: #1989fa; color: white; border: none; border-radius: 4px; font-size: 14px; }
+    .camera-btn-cancel { background: #666; }
     .input-box { margin: 15px 0; }
     .input-label { font-size: 14px; color: #666; margin-bottom: 5px; display: block; }
     .input-field { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
@@ -51,7 +52,6 @@
     .goods-item span { color: #666; }
     .empty-tip { text-align: center; color: #999; padding: 20px; font-size: 14px; }
     .file-info { font-size: 13px; color: #666; margin-top: 10px; }
-    /* 弹窗通用样式 */
     .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 100; }
     .modal-content { background: white; width: 90%; max-width: 350px; border-radius: 8px; padding: 20px; }
     .modal-title { font-size: 16px; font-weight: bold; color: #333; text-align: center; margin-bottom: 15px; }
@@ -59,7 +59,6 @@
     .modal-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
     .modal-btn-cancel { background: #eee; color: #333; }
     .modal-btn-confirm { background: #1989fa; color: white; }
-    /* 管理员弹窗样式 */
     .admin-modal-content { background: white; width: 90%; max-width: 480px; border-radius: 8px; padding: 20px; }
     .admin-form-group { margin-bottom: 15px; }
     .admin-form-label { font-size: 14px; color: #666; margin-bottom: 5px; display: block; }
@@ -67,35 +66,31 @@
     .user-item { padding: 10px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
     .user-info { font-size: 14px; }
     .user-expire { color: #666; font-size: 12px; margin-top: 3px; }
-    .edit-btn, .reset-pwd-btn, .kick-btn, .disable-btn, .enable-btn, .delete-btn { padding: 4px 8px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 5px; }
+    .audit-pass-btn { background: #00b42a; color: white; }
+    .audit-reject-btn { background: #f5222d; color: white; }
     .edit-btn { background: #1989fa; color: white; }
     .reset-pwd-btn { background: #ff7a45; color: white; }
     .kick-btn { background: #ff4d4f; color: white; }
     .disable-btn { background: #f5222d; color: white; }
     .enable-btn { background: #00b42a; color: white; }
     .delete-btn { background: #000; color: white; }
-    /* 收款码设置样式 */
     .qrcode-setting { border-top: 1px solid #eee; padding-top: 15px; margin-top: 15px; }
     .qrcode-preview { width: 120px; height: 120px; border: 1px solid #eee; margin: 10px auto; display: flex; justify-content: center; align-items: center; }
     .qrcode-preview img { max-width: 110px; max-height: 110px; }
     .upload-qrcode-btn { width: 100%; padding: 8px; background: #eee; color: #333; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; margin-top: 5px; }
     #qrcodeFileInput { display: none; }
-    /* 到期扫码付费弹窗样式 */
     .expire-pay-modal-content { background: white; width: 90%; max-width: 320px; border-radius: 8px; padding: 20px; text-align: center; }
     .qrcode-box { width: 180px; height: 180px; margin: 15px auto; border: 1px solid #eee; display: flex; justify-content: center; align-items: center; background: white; }
     .qrcode-box img { max-width: 160px; max-height: 160px; }
     .pay-tip { color: #f5222d; font-size: 14px; margin: 10px 0; }
     .pay-owner { color: #333; font-size: 13px; margin: 5px 0; font-weight: bold; }
     .contact-info { font-size: 13px; color: #666; margin-top: 15px; }
-    /* 提示框 */
     .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 6px; font-size: 14px; display: none; z-index: 200; }
     .sync-tip { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; padding: 8px 15px; border-radius: 4px; font-size: 12px; display: none; z-index: 150; }
-    /* 续费提醒弹窗 */
     .renewal-notice-modal-content { background: white; width: 90%; max-width: 380px; border-radius: 8px; padding: 25px; text-align: center; }
     .renewal-icon { font-size: 50px; color: #13c2c2; margin-bottom: 15px; }
     .renewal-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; }
     .renewal-info { font-size: 14px; line-height: 1.8; color: #666; text-align: left; margin-bottom: 20px; }
-    /* 续期日志+使用日志样式 */
     .log-section { margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px; }
     .log-title { font-size: 14px; font-weight: bold; color: #333; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .log-toggle { font-size: 12px; color: #1989fa; cursor: pointer; }
@@ -103,10 +98,31 @@
     .log-item { padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
     .use-log-item { padding: 8px 0; border-bottom: 1px solid #f5f5f5; }
     .use-log-time { color: #999; font-size: 11px; }
+    .renewal-audit-modal-content { background: white; width: 90%; max-width: 380px; border-radius: 8px; padding: 25px; }
+    .audit-form-group { margin-bottom: 20px; }
+    .audit-form-label { font-size: 14px; color: #666; margin-bottom: 8px; display: block; font-weight: bold; }
+    .audit-form-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    /* 扫码框动画 */
+    .scan-line {
+      position: relative;
+      height: 3px;
+      background: #1989fa;
+      width: 80%;
+      margin: 0 auto;
+      animation: scanMove 2s infinite linear;
+    }
+    @keyframes scanMove {
+      0% { top: 0; }
+      50% { top: 347px; }
+      100% { top: 0; }
+    }
   </style>
+  <!-- 扫码核心库（优化加载速度） -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <body>
-  <!-- 登录/注册页面（默认显示） -->
   <div class="auth-container">
     <div class="auth-card">
       <div class="auth-title">便利店点货系统</div>
@@ -114,20 +130,18 @@
         <div class="auth-tab active" id="loginTab">登录</div>
         <div class="auth-tab" id="registerTab">注册</div>
       </div>
-      <!-- 登录表单 -->
       <div id="loginForm">
         <div class="form-group">
           <label class="form-label">用户名（门店账号/管理员）</label>
-          <input type="text" class="form-input" id="loginUsername" placeholder="请输入用户名">
+          <input type="text" class="form-input" id="loginUsername" placeholder="管理员默认：admin">
         </div>
         <div class="form-group">
           <label class="form-label">密码</label>
-          <input type="password" class="form-input" id="loginPassword" placeholder="请输入密码">
+          <input type="password" class="form-input" id="loginPassword" placeholder="管理员默认：admin123">
         </div>
         <button class="auth-btn" id="loginBtn">登录</button>
         <div class="auth-tip" id="authTip"></div>
       </div>
-      <!-- 注册表单 -->
       <div id="registerForm" style="display: none;">
         <div class="form-group">
           <label class="form-label">手机号码</label>
@@ -145,10 +159,9 @@
       </div>
     </div>
   </div>
-  <!-- 主页面（登录后显示） -->
+
   <div id="mainPage" style="display: none;">
     <div class="header">便利店点货核对系统</div>
-    <!-- 用户信息栏 -->
     <div class="user-info-bar" id="userInfoBar">
       <span id="currentStoreName">当前门店：--</span>
       <span class="expire-info" id="expireInfo">有效期：--</span>
@@ -159,7 +172,6 @@
       </div>
     </div>
     <div class="container">
-      <!-- 上传区域 -->
       <div class="card">
         <div class="card-title">
           配送单管理
@@ -170,12 +182,21 @@
         <div class="file-info" id="fileInfo"></div>
         <button class="btn btn-danger" id="deleteBtn" style="display: none;">删除当前配送单</button>
       </div>
-      <!-- 点货区域 -->
+
       <div class="card" id="checkCard" style="display: none;">
         <div class="card-title">扫码点货</div>
         <div class="scan-box" id="scanBox">
           <div class="scan-icon">📷</div>
-          <div>点击输入商品条码（支持后4位）</div>
+          <div>点击启动相机扫码（支持商品条码）</div>
+        </div>
+        <!-- 相机容器（优化高度和样式） -->
+        <div id="scanCamera">
+          <!-- 扫码线动画 -->
+          <div class="scan-line"></div>
+        </div>
+        <div class="camera-control" id="cameraControl" style="display: none;">
+          <button class="camera-btn camera-btn-cancel" id="closeCamera">关闭相机</button>
+          <button class="camera-btn" id="refreshCamera">重新扫码</button>
         </div>
         <div class="input-box">
           <label class="input-label">手动输入商品条码（13位完整码或后4位）</label>
@@ -190,22 +211,23 @@
           <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
         </div>
       </div>
-      <!-- 商品列表 -->
+
       <div class="card" id="goodsCard" style="display: none;">
         <div class="card-title">商品清单</div>
         <div class="goods-list" id="goodsList"></div>
       </div>
-      <!-- 差异区域 -->
+
       <div class="card" id="diffCard" style="display: none;">
         <div class="card-title">差异提醒</div>
         <div id="diffList" class="goods-list"></div>
         <button class="btn btn-primary" id="exportBtn">导出差异报表</button>
       </div>
-      <!-- 空状态 -->
+
       <div class="empty-tip" id="emptyTip">请先上传【配送收货单】Excel开始点货</div>
     </div>
   </div>
-  <!-- 数量弹窗 -->
+
+  <!-- 数量输入弹窗 -->
   <div class="modal" id="quantityModal">
     <div class="modal-content">
       <div class="modal-title" id="quantityTitle">请输入实到数量</div>
@@ -219,23 +241,22 @@
       </div>
     </div>
   </div>
-  <!-- 差异弹窗 -->
+
+  <!-- 差异提醒弹窗 -->
   <div class="modal" id="diffModal">
     <div class="modal-content">
       <div class="modal-title" style="color:#f5222d">数量差异</div>
-      <div style="font-size:14px; line-height:1.5; margin-bottom:20px;" id="diffInfo">
-        <!-- 差异内容 -->
-      </div>
+      <div style="font-size:14px; line-height:1.5; margin-bottom:20px;" id="diffInfo"></div>
       <div class="modal-footer">
         <button class="modal-btn modal-btn-confirm" id="closeDiff">确认</button>
       </div>
     </div>
   </div>
+
   <!-- 管理员弹窗 -->
   <div class="modal" id="adminModal">
     <div class="admin-modal-content">
       <div class="modal-title">管理员权限设置</div>
-      <!-- 管理员密码验证 -->
       <div id="adminAuth" style="display: block;">
         <div class="admin-form-group">
           <label class="admin-form-label">管理员密码</label>
@@ -246,17 +267,20 @@
           <button class="modal-btn modal-btn-confirm" id="confirmAdminAuth">确认</button>
         </div>
       </div>
-      <!-- 权限管理（验证后显示） -->
       <div id="adminManage" style="display: none;">
         <div style="margin-bottom:15px;">
           <button class="modal-btn modal-btn-confirm" id="addUserBtn" style="flex: none; width: auto; padding: 8px 15px;">新增门店账号</button>
           <button class="modal-btn modal-btn-confirm" id="exportDataBtn" style="flex: none; width: auto; padding: 8px 15px; background:#13c2c2;">导出数据</button>
           <button class="modal-btn modal-btn-confirm" id="importDataBtn" style="flex: none; width: auto; padding: 8px 15px; background:#722ed1;">导入数据</button>
         </div>
-        <div id="userList" style="max-height:250px; overflow-y:auto; margin-bottom:15px;">
-          <!-- 用户列表（门店账号） -->
+        <div class="log-section" style="margin-top:0;">
+          <div class="log-title">
+            待审核续费申请 <span style="color:#f5222d;" id="auditCount">(0)</span>
+            <span class="log-toggle" id="toggleAuditList">展开</span>
+          </div>
+          <div class="log-list" id="auditList" style="display: none; max-height:200px;">暂无续费申请</div>
         </div>
-        <!-- 续期日志 -->
+        <div id="userList" style="max-height:250px; overflow-y:auto; margin-bottom:15px;"></div>
         <div class="log-section">
           <div class="log-title">
             门店续期日志
@@ -264,7 +288,6 @@
           </div>
           <div class="log-list" id="renewalLogList">暂无续期记录</div>
         </div>
-        <!-- 门店使用日志 -->
         <div class="log-section">
           <div class="log-title">
             门店使用日志（实时监控）
@@ -272,7 +295,6 @@
           </div>
           <div class="log-list" id="useLogList" style="display: none;">暂无门店使用记录</div>
         </div>
-        <!-- 收款码设置区域 -->
         <div class="qrcode-setting">
           <div class="admin-form-label" style="font-weight:bold;">收款二维码设置（门店付费扫码用）</div>
           <div class="qrcode-preview" id="qrcodePreview">
@@ -293,7 +315,8 @@
       </div>
     </div>
   </div>
-  <!-- 新增/编辑用户弹窗 -->
+
+  <!-- 新增/编辑门店账号弹窗 -->
   <div class="modal" id="userModal">
     <div class="modal-content">
       <div class="modal-title" id="userModalTitle">新增门店账号</div>
@@ -315,7 +338,8 @@
       </div>
     </div>
   </div>
-  <!-- 管理员修改密码弹窗 -->
+
+  <!-- 密码修改弹窗（管理员） -->
   <div class="modal" id="changeAdminPwdModal">
     <div class="modal-content">
       <div class="modal-title">修改管理员密码</div>
@@ -337,7 +361,8 @@
       </div>
     </div>
   </div>
-  <!-- 门店修改密码弹窗 -->
+
+  <!-- 密码修改弹窗（门店） -->
   <div class="modal" id="changeStorePwdModal">
     <div class="modal-content">
       <div class="modal-title">修改门店密码</div>
@@ -359,41 +384,41 @@
       </div>
     </div>
   </div>
-  <!-- 门店密码重置弹窗 -->
+
+  <!-- 重置门店密码弹窗 -->
   <div class="modal" id="resetStorePwdModal">
     <div class="modal-content">
       <div class="modal-title" id="resetPwdTitle">重置门店账号密码</div>
       <div class="admin-form-group">
         <label class="admin-form-label">新密码</label>
-        <input type="password" class="admin-form-input" id="newStorePwd" placeholder="请输入新密码（至少6位）">
+        <input type="password" class="admin-form-input" id="newStorePwdReset" placeholder="请输入新密码（至少6位）">
       </div>
       <div class="admin-form-group">
         <label class="admin-form-label">确认新密码</label>
-        <input type="password" class="admin-form-input" id="confirmNewStorePwd" placeholder="再次输入新密码">
+        <input type="password" class="admin-form-input" id="confirmNewStorePwdReset" placeholder="再次输入新密码">
       </div>
-      <input type="hidden" id="resetStoreUserId"> <!-- 存储待重置密码的门店ID -->
+      <input type="hidden" id="resetStoreUserId">
       <div class="modal-footer">
         <button class="modal-btn modal-btn-cancel" id="cancelResetStorePwd">取消</button>
         <button class="modal-btn modal-btn-confirm" id="confirmResetStorePwd">确认重置</button>
       </div>
     </div>
   </div>
-  <!-- 到期扫码付费弹窗 -->
+
+  <!-- 账号到期续费弹窗 -->
   <div class="modal" id="expirePayModal">
     <div class="expire-pay-modal-content">
       <div class="modal-title" style="color:#f5222d">账号已到期，请续费</div>
-      <div class="pay-tip">扫描下方二维码完成付费，输入天数后点击自动续期</div>
+      <div class="pay-tip">扫描下方二维码完成付费，输入天数后提交审核</div>
       <div class="pay-owner">付款对象：便利店管理</div>
-      <!-- 付费二维码 -->
       <div class="qrcode-box" id="payQrcodeBox">
         <img id="payQrcodeImg" src="" alt="收款二维码">
       </div>
-      <!-- 自动续期输入框 -->
       <div style="margin:15px 0; text-align:left; padding:0 10px;">
         <label class="admin-form-label" style="margin-bottom:8px; font-size:14px;">付费后输入续期天数</label>
         <input type="number" class="admin-form-input" id="expireAddDays" min="7" placeholder="如：30/90/365，最少7天" style="width:100%;">
       </div>
-      <button class="modal-btn modal-btn-confirm" id="confirmExpireBtn" style="width:95%; margin:0 auto 10px; display:block;">确认付费，自动续期</button>
+      <button class="modal-btn modal-btn-confirm" id="confirmExpireBtn" style="width:95%; margin:0 auto 10px; display:block;">提交续费申请</button>
       <div class="contact-info" id="payContactInfo">
         管理员联系方式：<br>
         电话13800000000
@@ -403,46 +428,83 @@
       </div>
     </div>
   </div>
-  <!-- 管理员续费到账提醒弹窗 -->
+
+  <!-- 续费到账提醒弹窗 -->
   <div class="modal" id="renewalNoticeModal">
     <div class="renewal-notice-modal-content">
       <div class="renewal-icon">✅</div>
       <div class="renewal-title">门店续费到账提醒</div>
-      <div class="renewal-info" id="renewalNoticeInfo">
-        <!-- 续费信息 -->
-      </div>
+      <div class="renewal-info" id="renewalNoticeInfo"></div>
       <div class="modal-footer">
         <button class="modal-btn modal-btn-confirm" id="closeRenewalNotice">确认</button>
       </div>
     </div>
   </div>
-  <!-- 提示框 -->
+
+  <!-- 续费审核弹窗 -->
+  <div class="modal" id="renewalAuditModal">
+    <div class="renewal-audit-modal-content">
+      <div class="modal-title">审核续费申请</div>
+      <input type="hidden" id="auditApplyId">
+      <div class="audit-form-group">
+        <label class="audit-form-label">门店账号</label>
+        <input type="text" class="audit-form-input" id="auditStoreName" readonly>
+      </div>
+      <div class="audit-form-group">
+        <label class="audit-form-label">申请续期天数</label>
+        <input type="number" class="audit-form-input" id="auditApplyDays" readonly>
+      </div>
+      <div class="audit-form-group">
+        <label class="audit-form-label">实际审核天数 <span style="color:#f5222d;">(可修改)</span></label>
+        <input type="number" class="audit-form-input" id="auditRealDays" min="7" placeholder="输入实际续期天数">
+      </div>
+      <div class="audit-form-group">
+        <label class="audit-form-label">收费金额（元）</label>
+        <input type="number" class="audit-form-input" id="auditMoney" min="0" placeholder="输入收费金额，0为免费">
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-cancel" id="cancelAudit">取消</button>
+        <button class="modal-btn modal-btn-confirm audit-pass-btn" id="passAudit">审核通过</button>
+        <button class="modal-btn modal-btn-confirm audit-reject-btn" id="rejectAudit">审核驳回</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 审核结果通知弹窗 -->
+  <div class="modal" id="auditResultModal">
+    <div class="modal-content">
+      <div class="modal-title" id="auditResultTitle">续费申请审核结果</div>
+      <div style="font-size:14px; line-height:1.8; margin:20px 0; text-align:center;" id="auditResultInfo"></div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-btn-confirm" id="closeAuditResult">确认</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
   <div class="sync-tip" id="syncTip"></div>
 
-  <!-- 引入必要库 -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script>
-    // --------------- 仓库数据配置（已填好你的仓库信息）---------------
+    // -------------------------- 核心配置（移除本地缓存依赖）--------------------------
     const REPO_CONFIG = {
       readUrl: 'https://raw.githubusercontent.com/MDJTL/.github.io/main/store_data.json',
       writeUrl: 'https://api.github.com/repos/MDJTL/.github.io/contents/store_data.json',
-      token: '' // 无需填写，改用导出/导入同步
+      token: '' // 无需填写，保持原同步逻辑
     };
-
-    // --------------- 系统配置（可修改这里的默认信息）---------------
     const SYSTEM_CONFIG = {
-      adminDefaultPwd: 'admin123', // 默认管理员密码（登录后建议修改）
-      defaultExpireDays: 30,        // 新注册用户免费试用天数
-      trialExpireDays: 30,          // 免费试用天数
-      minPwdLength: 6,              // 密码最小长度
-      expireWarnDays: 3,            // 到期提醒天数（提前3天提醒）
-      defaultPayOwner: '便利店管理', // 付款对象名称
-      defaultContact: '电话13800000000' // 管理员联系方式
+      adminDefaultPwd: 'admin123',
+      defaultExpireDays: 30,
+      trialExpireDays: 30,
+      minPwdLength: 6,
+      expireWarnDays: 3,
+      defaultPayOwner: '便利店管理',
+      defaultContact: '电话13800000000',
+      syncInterval: 1500, // 缩短同步间隔到1.5秒，确保实时性
+      cameraWidth: 400,   // 优化相机分辨率
+      cameraHeight: 350
     };
 
-    // --------------- 全局核心数据（从仓库同步）---------------
+    // -------------------------- 全局数据（无本地缓存，纯远程同步）--------------------------
     let GLOBAL_DATA = {
       userList: [],
       payQrcode: '',
@@ -451,10 +513,13 @@
       renewalLog: [],
       unreadRenewal: [],
       useLog: [],
-      loginSessions: {} // 记录账号登录会话 { "账号名": { deviceId: "设备ID", loginTime: 登录时间戳 } }
+      loginSessions: {},
+      renewalApply: [],
+      auditResult: [],
+      dataVersion: 1 // 数据版本号，用于检测更新
     };
 
-    // --------------- 设备本地状态（各设备独立）---------------
+    // -------------------------- 本地状态（仅存储当前会话数据）--------------------------
     const LOCAL_STATE = {
       isLogin: false,
       currentUser: null,
@@ -464,10 +529,16 @@
       diffs: [],
       currentGoods: null,
       editUserId: null,
-      resetStoreUserId: null
+      resetStoreUserId: null,
+      cameraStream: null,
+      canvas: null,
+      canvasContext: null,
+      lastSyncTime: 0,
+      localDataVersion: 0,
+      deviceId: 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9) // 临时设备ID，不存储
     };
 
-    // --------------- DOM元素 ---------------
+    // -------------------------- DOM元素获取 --------------------------
     const el = {
       // 登录/注册页面
       loginTab: document.getElementById('loginTab'),
@@ -510,6 +581,11 @@
       diffList: document.getElementById('diffList'),
       exportBtn: document.getElementById('exportBtn'),
       emptyTip: document.getElementById('emptyTip'),
+      // 相机相关（优化选择器）
+      scanCamera: document.getElementById('scanCamera'),
+      cameraControl: document.getElementById('cameraControl'),
+      closeCamera: document.getElementById('closeCamera'),
+      refreshCamera: document.getElementById('refreshCamera'),
       // 弹窗相关
       quantityModal: document.getElementById('quantityModal'),
       quantityTitle: document.getElementById('quantityTitle'),
@@ -562,8 +638,8 @@
       confirmChangeStorePwd: document.getElementById('confirmChangeStorePwd'),
       resetStorePwdModal: document.getElementById('resetStorePwdModal'),
       resetPwdTitle: document.getElementById('resetPwdTitle'),
-      newStorePwd: document.getElementById('newStorePwd'),
-      confirmNewStorePwd: document.getElementById('confirmNewStorePwd'),
+      newStorePwdReset: document.getElementById('newStorePwdReset'),
+      confirmNewStorePwdReset: document.getElementById('confirmNewStorePwdReset'),
       resetStoreUserId: document.getElementById('resetStoreUserId'),
       cancelResetStorePwd: document.getElementById('cancelResetStorePwd'),
       confirmResetStorePwd: document.getElementById('confirmResetStorePwd'),
@@ -577,17 +653,33 @@
       renewalNoticeInfo: document.getElementById('renewalNoticeInfo'),
       closeRenewalNotice: document.getElementById('closeRenewalNotice'),
       toast: document.getElementById('toast'),
-      syncTip: document.getElementById('syncTip')
+      syncTip: document.getElementById('syncTip'),
+      auditCount: document.getElementById('auditCount'),
+      toggleAuditList: document.getElementById('toggleAuditList'),
+      auditList: document.getElementById('auditList'),
+      renewalAuditModal: document.getElementById('renewalAuditModal'),
+      auditApplyId: document.getElementById('auditApplyId'),
+      auditStoreName: document.getElementById('auditStoreName'),
+      auditApplyDays: document.getElementById('auditApplyDays'),
+      auditRealDays: document.getElementById('auditRealDays'),
+      auditMoney: document.getElementById('auditMoney'),
+      cancelAudit: document.getElementById('cancelAudit'),
+      passAudit: document.getElementById('passAudit'),
+      rejectAudit: document.getElementById('rejectAudit'),
+      auditResultModal: document.getElementById('auditResultModal'),
+      auditResultTitle: document.getElementById('auditResultTitle'),
+      auditResultInfo: document.getElementById('auditResultInfo'),
+      closeAuditResult: document.getElementById('closeAuditResult')
     };
 
-    // --------------- 基础工具函数 ---------------
+    // -------------------------- 工具函数（移除localStorage相关）--------------------------
     function showToast(text, time = 2000) {
       el.toast.textContent = text;
       el.toast.style.display = 'block';
       setTimeout(() => el.toast.style.display = 'none', time);
     }
 
-    function showSyncTip(text, time = 2000) {
+    function showSyncTip(text, time = 1500) {
       el.syncTip.textContent = text;
       el.syncTip.style.display = 'block';
       setTimeout(() => el.syncTip.style.display = 'none', time);
@@ -629,36 +721,21 @@
       return Math.ceil((end - start) / (1000 * 60 * 60 * 24));
     }
 
-    // 生成递增门店账号（从store0188开始）
     function generateIncrementalUsername() {
-      // 查找所有门店账号
       const storeUsers = GLOBAL_DATA.userList.filter(u => u.role === 'user' && u.username.startsWith('store'));
-      
-      // 提取数字部分并排序
       const numbers = storeUsers.map(u => {
         const numStr = u.username.replace('store', '');
         return numStr ? parseInt(numStr) : 0;
       }).filter(num => !isNaN(num));
-      
-      // 初始值为188，后续递增
       let nextNum = numbers.length > 0 ? Math.max(...numbers) + 1 : 188;
-      
-      // 补零到4位（0188、0189、0190...）
       return `store${String(nextNum).padStart(4, '0')}`;
     }
 
-    // 获取设备唯一标识
+    // 移除localStorage，直接生成临时设备ID（不持久化）
     function getDeviceId() {
-      let deviceId = localStorage.getItem('device_id');
-      if (!deviceId) {
-        // 生成唯一设备ID（基于时间戳+随机数）
-        deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('device_id', deviceId);
-      }
-      return deviceId;
+      return LOCAL_STATE.deviceId;
     }
 
-    // 检查账号是否过期
     function checkUserExpire(user) {
       if (user.role === 'admin') return false;
       const today = new Date();
@@ -666,92 +743,382 @@
       return today > expireDate;
     }
 
-    // 检查到期提醒
     function checkExpireWarn(user) {
       if (user.role === 'admin') return false;
       const diffDays = getDateDiff(new Date(), new Date(user.expireDate));
       return diffDays <= SYSTEM_CONFIG.expireWarnDays && diffDays >= 0;
     }
 
-    // 记录使用日志
     async function recordUseLog(action) {
       if (!LOCAL_STATE.currentUser) return;
       const logItem = {
         user: LOCAL_STATE.currentUser.username,
         action: action,
         time: formatDateTime(new Date()),
-        device: navigator.userAgent.substring(0, 50)
+        device: LOCAL_STATE.deviceId.substring(0, 15) // 仅用部分设备ID，保护隐私
       };
       GLOBAL_DATA.useLog.unshift(logItem);
-      // 只保留最近100条日志
       if (GLOBAL_DATA.useLog.length > 100) GLOBAL_DATA.useLog.pop();
-      // 保存到本地
       await saveToRepo();
     }
 
-    // --------------- 数据同步函数（本地存储+GitHub读取）---------------
-    // 从GitHub读取最新数据（所有设备都能读）
+        // -------------------------- 核心优化1：实时同步（无缓存）--------------------------
     async function loadFromRepo() {
       try {
         showSyncTip('正在同步最新数据...');
-        // 先尝试从GitHub读取
-        const response = await fetch(REPO_CONFIG.readUrl);
+        const response = await fetch(REPO_CONFIG.readUrl, { cache: 'no-store' }); // 禁用缓存
         if (response.ok) {
           const data = await response.json();
-          GLOBAL_DATA = { ...GLOBAL_DATA, ...data };
-          // 保存到本地备份
-          localStorage.setItem('store_data_backup', JSON.stringify(GLOBAL_DATA));
+          GLOBAL_DATA = {
+            ...{ renewalApply: [], auditResult: [], dataVersion: 1 },
+            ...data
+          };
           showSyncTip('数据同步成功', 1500);
           return true;
         }
       } catch (error) {
-        console.error('从GitHub同步失败，使用本地数据:', error);
+        console.error('从GitHub同步失败:', error);
+        showToast('网络同步失败，使用默认数据');
       }
-      // 备用：读取本地数据
-      const localData = localStorage.getItem('store_data_backup');
-      if (localData) {
-        GLOBAL_DATA = JSON.parse(localData);
-        showSyncTip('使用本地数据', 1500);
-      } else {
-        // 初始化默认数据
-        GLOBAL_DATA = {
-          userList: [
-            {
-              id: 'admin_1',
-              username: 'admin',
-              password: SYSTEM_CONFIG.adminDefaultPwd,
-              role: 'admin',
-              expireDate: formatDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10)),
-              status: 'enable'
-            }
-          ],
-          payQrcode: '',
-          payOwner: SYSTEM_CONFIG.defaultPayOwner,
-          contactInfo: SYSTEM_CONFIG.defaultContact,
-          renewalLog: [],
-          unreadRenewal: [],
-          useLog: [],
-          loginSessions: {}
-        };
-        await saveToRepo();
-      }
+      // 无本地缓存，直接初始化默认数据
+      GLOBAL_DATA = {
+        userList: [
+          {
+            id: 'admin_1',
+            username: 'admin',
+            password: SYSTEM_CONFIG.adminDefaultPwd,
+            role: 'admin',
+            expireDate: formatDate(new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10)),
+            status: 'enable'
+          }
+        ],
+        payQrcode: '',
+        payOwner: SYSTEM_CONFIG.defaultPayOwner,
+        contactInfo: SYSTEM_CONFIG.defaultContact,
+        renewalLog: [],
+        unreadRenewal: [],
+        useLog: [],
+        loginSessions: {},
+        renewalApply: [],
+        auditResult: [],
+        dataVersion: 1
+      };
       return true;
     }
 
-    // 保存数据到本地存储
     async function saveToRepo() {
       try {
-        showSyncTip('正在保存数据到本地...');
-        localStorage.setItem('store_data_backup', JSON.stringify(GLOBAL_DATA));
-        showSyncTip('数据保存成功', 1500);
-        return true;
+        showSyncTip('正在保存数据到远程...');
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(GLOBAL_DATA, null, 2))));
+        const response = await fetch(REPO_CONFIG.writeUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${REPO_CONFIG.token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: '更新点货系统数据',
+            content: content
+          })
+        });
+        if (response.ok) {
+          showSyncTip('数据保存成功', 1500);
+          return true;
+        }
       } catch (error) {
-        showToast('保存失败');
+        console.error('保存到GitHub失败:', error);
+        showToast('数据保存失败，请检查网络');
         return false;
       }
     }
 
-    // 导出数据（管理员专属）
+    function startSyncTimer() {
+      setInterval(async () => {
+        if (!LOCAL_STATE.isLogin || LOCAL_STATE.currentUser.role === 'admin') return;
+        const now = Date.now();
+        if (now - LOCAL_STATE.lastSyncTime < SYSTEM_CONFIG.syncInterval) return;
+        LOCAL_STATE.lastSyncTime = now;
+
+        try {
+          const oldVersion = GLOBAL_DATA.dataVersion;
+          await loadFromRepo();
+          
+          if (GLOBAL_DATA.dataVersion > LOCAL_STATE.localDataVersion) {
+            showSyncTip('检测到管理员更新数据，正在实时同步...', 1500);
+            LOCAL_STATE.localDataVersion = GLOBAL_DATA.dataVersion;
+
+            const currentUser = GLOBAL_DATA.userList.find(u => u.id === LOCAL_STATE.currentUser.id);
+            if (!currentUser) {
+              showToast('当前账号已被管理员删除，强制退出');
+              forceLogout();
+              return;
+            }
+            if (currentUser.status === 'disable') {
+              showToast('当前账号已被管理员禁用，强制退出');
+              forceLogout();
+              return;
+            }
+            if (currentUser.password !== LOCAL_STATE.currentUser.password) {
+              showToast('账号密码已被管理员修改，强制退出');
+              forceLogout();
+              return;
+            }
+            if (checkUserExpire(currentUser)) {
+              showToast('账号已被管理员设置为过期，强制退出');
+              forceLogout();
+              showExpirePayModal();
+              return;
+            }
+
+            LOCAL_STATE.currentUser = currentUser;
+            const diffDays = getDateDiff(new Date(), new Date(currentUser.expireDate));
+            const isTrial = currentUser.isTrial;
+            const trialTip = isTrial ? '（免费试用）' : '';
+            if (checkExpireWarn(currentUser)) {
+              el.expireInfo.textContent = `有效期至：${currentUser.expireDate}（剩余${diffDays}天${trialTip}，即将到期）`;
+              el.expireInfo.className = 'expire-info expire-warning';
+            } else {
+              el.expireInfo.textContent = `有效期至：${currentUser.expireDate}（剩余${diffDays}天${trialTip}）`;
+              el.expireInfo.className = 'expire-info';
+            }
+
+            checkAuditResult(currentUser.username);
+          }
+        } catch (error) {
+          console.error('定时同步失败:', error);
+        }
+      }, SYSTEM_CONFIG.syncInterval);
+    }
+
+    // -------------------------- 核心优化2：相机扫码修复 --------------------------
+    function initCameraScan() {
+      LOCAL_STATE.canvas = document.createElement('canvas');
+      LOCAL_STATE.canvasContext = LOCAL_STATE.canvas.getContext('2d');
+      LOCAL_STATE.canvas.width = SYSTEM_CONFIG.cameraWidth;
+      LOCAL_STATE.canvas.height = SYSTEM_CONFIG.cameraHeight;
+      el.scanCamera.appendChild(LOCAL_STATE.canvas);
+
+      el.scanBox.addEventListener('click', async () => {
+        if (el.scanCamera.style.display === 'block') {
+          el.barcodeInput.focus();
+          return;
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+              facingMode: 'environment', 
+              width: { ideal: SYSTEM_CONFIG.cameraWidth }, 
+              height: { ideal: SYSTEM_CONFIG.cameraHeight }
+            }
+          });
+          LOCAL_STATE.cameraStream = stream;
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.autoplay = true;
+          video.playsInline = true;
+          video.style.width = '100%';
+          video.style.height = '100%';
+          video.style.objectFit = 'cover';
+          el.scanCamera.innerHTML = '<div class="scan-line"></div>';
+          el.scanCamera.appendChild(video);
+          el.scanCamera.style.display = 'block';
+          el.cameraControl.style.display = 'flex';
+          video.onloadedmetadata = () => {
+            LOCAL_STATE.canvas.width = video.videoWidth;
+            LOCAL_STATE.canvas.height = video.videoHeight;
+            scanFrame(video);
+          };
+        } catch (error) {
+          console.error('相机调用失败:', error);
+          showToast('相机权限被拒绝或设备不支持，请手动输入条码');
+        }
+      });
+
+      el.closeCamera.addEventListener('click', () => {
+        if (LOCAL_STATE.cameraStream) {
+          LOCAL_STATE.cameraStream.getTracks().forEach(track => track.stop());
+          LOCAL_STATE.cameraStream = null;
+        }
+        el.scanCamera.style.display = 'none';
+        el.cameraControl.style.display = 'none';
+        el.scanCamera.innerHTML = '<div class="scan-line"></div>';
+      });
+
+      el.refreshCamera.addEventListener('click', () => {
+        el.closeCamera.click();
+        setTimeout(() => el.scanBox.click(), 300);
+      });
+    }
+
+    function scanFrame(video) {
+      if (!LOCAL_STATE.cameraStream) return;
+      try {
+        LOCAL_STATE.canvasContext.drawImage(video, 0, 0, LOCAL_STATE.canvas.width, LOCAL_STATE.canvas.height);
+        const imageData = LOCAL_STATE.canvasContext.getImageData(0, 0, LOCAL_STATE.canvas.width, LOCAL_STATE.canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+        if (code) {
+          const barcode = code.data.trim();
+          if (barcode) {
+            el.barcodeInput.value = barcode;
+            el.closeCamera.click();
+            const goods = findGoods(barcode);
+            if (goods) openQuantityModal(goods);
+            else { showToast('未找到该商品'); vibrate(); }
+            return;
+          }
+        }
+        requestAnimationFrame(() => scanFrame(video));
+      } catch (error) {
+        console.error('扫码处理失败:', error);
+        requestAnimationFrame(() => scanFrame(video));
+      }
+    }
+
+    // -------------------------- 其他核心功能 --------------------------
+    async function submitRenewalApply() {
+      const days = Number(el.expireAddDays.value);
+      if (!days || days < 7) { showToast('续期天数最少7天'); return; }
+      const applyId = 'apply_' + Date.now();
+      const apply = {
+        id: applyId,
+        store: LOCAL_STATE.currentUser.username,
+        storeId: LOCAL_STATE.currentUser.id,
+        applyDays: days,
+        applyTime: formatDateTime(new Date()),
+        status: 'pending'
+      };
+      GLOBAL_DATA.renewalApply.unshift(apply);
+      await saveToRepo();
+      el.expirePayModal.style.display = 'none';
+      showToast('续费申请已提交，等待管理员审核');
+      forceLogout();
+    }
+
+    function renderRenewalApply() {
+      const applyList = GLOBAL_DATA.renewalApply.filter(apply => apply.status === 'pending');
+      el.auditCount.textContent = `(${applyList.length})`;
+      if (applyList.length === 0) { el.auditList.innerHTML = '暂无待审核的续费申请'; return; }
+      el.auditList.innerHTML = '';
+      applyList.forEach(apply => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `${apply.applyTime} | 门店：${apply.store} | 申请续期${apply.applyDays}天
+          <div style="margin-top:5px;">
+            <button class="audit-pass-btn" data-id="${apply.id}">通过</button>
+            <button class="audit-reject-btn" data-id="${apply.id}">驳回</button>
+          </div>`;
+        el.auditList.appendChild(item);
+      });
+      document.querySelectorAll('.audit-pass-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const applyId = btn.getAttribute('data-id');
+          const apply = GLOBAL_DATA.renewalApply.find(a => a.id === applyId);
+          if (apply) {
+            el.auditApplyId.value = applyId;
+            el.auditStoreName.value = apply.store;
+            el.auditApplyDays.value = apply.applyDays;
+            el.auditRealDays.value = apply.applyDays;
+            el.auditMoney.value = '';
+            el.renewalAuditModal.style.display = 'flex';
+          }
+        });
+      });
+      document.querySelectorAll('.audit-reject-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const applyId = btn.getAttribute('data-id');
+          const applyIndex = GLOBAL_DATA.renewalApply.findIndex(a => a.id === applyId);
+          if (applyIndex === -1) return;
+          if (!confirm('确定要驳回该续费申请吗？')) return;
+          GLOBAL_DATA.renewalApply[applyIndex].status = 'rejected';
+          GLOBAL_DATA.renewalApply[applyIndex].rejectTime = formatDateTime(new Date());
+          GLOBAL_DATA.auditResult.push({
+            store: GLOBAL_DATA.renewalApply[applyIndex].store,
+            type: 'rejected',
+            message: `你的续费申请（${GLOBAL_DATA.renewalApply[applyIndex].applyDays}天）已被驳回，请联系管理员`,
+            time: formatDateTime(new Date())
+          });
+          await saveToRepo();
+          renderRenewalApply();
+          showToast('续费申请已驳回');
+        });
+      });
+    }
+
+    async function passAudit() {
+      const applyId = el.auditApplyId.value;
+      const realDays = Number(el.auditRealDays.value);
+      const money = Number(el.auditMoney.value) || 0;
+      if (!realDays || realDays < 7) { showToast('续期天数最少7天'); return; }
+      const applyIndex = GLOBAL_DATA.renewalApply.findIndex(a => a.id === applyId);
+      if (applyIndex === -1) { showToast('续费申请不存在'); el.renewalAuditModal.style.display = 'none'; return; }
+      const apply = GLOBAL_DATA.renewalApply[applyIndex];
+      const storeIndex = GLOBAL_DATA.userList.findIndex(u => u.username === apply.store);
+      if (storeIndex === -1) { showToast('门店账号不存在'); el.renewalAuditModal.style.display = 'none'; return; }
+      const store = GLOBAL_DATA.userList[storeIndex];
+      const currentExpire = new Date(store.expireDate);
+      const newExpire = new Date(currentExpire);
+      newExpire.setDate(newExpire.getDate() + realDays);
+      GLOBAL_DATA.userList[storeIndex].expireDate = formatDate(newExpire);
+      if (GLOBAL_DATA.userList[storeIndex].isTrial) GLOBAL_DATA.userList[storeIndex].isTrial = false;
+      GLOBAL_DATA.renewalApply[applyIndex].status = 'passed';
+      GLOBAL_DATA.renewalApply[applyIndex].realDays = realDays;
+      GLOBAL_DATA.renewalApply[applyIndex].money = money;
+      GLOBAL_DATA.renewalApply[applyIndex].auditTime = formatDateTime(new Date());
+      GLOBAL_DATA.renewalLog.unshift({
+        store: apply.store,
+        days: realDays,
+        money: money,
+        time: formatDateTime(new Date()),
+        operator: '管理员审核'
+      });
+      GLOBAL_DATA.auditResult.push({
+        store: apply.store,
+        type: 'passed',
+        message: `你的续费申请已通过！续期${realDays}天，收费${money}元，有效期至${formatDate(newExpire)}`,
+        time: formatDateTime(new Date())
+      });
+      GLOBAL_DATA.dataVersion++;
+      await saveToRepo();
+      el.renewalAuditModal.style.display = 'none';
+      renderRenewalApply();
+      renderRenewalLog();
+      showToast('续费申请审核通过');
+    }
+
+    async function rejectAudit() {
+      const applyId = el.auditApplyId.value;
+      const applyIndex = GLOBAL_DATA.renewalApply.findIndex(a => a.id === applyId);
+      if (applyIndex === -1) { showToast('续费申请不存在'); el.renewalAuditModal.style.display = 'none'; return; }
+      if (!confirm('确定要驳回该续费申请吗？')) return;
+      GLOBAL_DATA.renewalApply[applyIndex].status = 'rejected';
+      GLOBAL_DATA.renewalApply[applyIndex].rejectTime = formatDateTime(new Date());
+      GLOBAL_DATA.auditResult.push({
+        store: GLOBAL_DATA.renewalApply[applyIndex].store,
+        type: 'rejected',
+        message: `你的续费申请（${GLOBAL_DATA.renewalApply[applyIndex].applyDays}天）已被驳回，请联系管理员`,
+        time: formatDateTime(new Date())
+      });
+      GLOBAL_DATA.dataVersion++;
+      await saveToRepo();
+      el.renewalAuditModal.style.display = 'none';
+      renderRenewalApply();
+      showToast('续费申请已驳回');
+    }
+
+    function checkAuditResult(storeName) {
+      const unreadResults = GLOBAL_DATA.auditResult.filter(res => res.store === storeName && !res.read);
+      if (unreadResults.length === 0) return;
+      const latestResult = unreadResults[0];
+      el.auditResultTitle.textContent = latestResult.type === 'passed' ? '续费申请通过' : '续费申请驳回';
+      el.auditResultInfo.innerHTML = latestResult.message;
+      el.auditResultModal.style.display = 'flex';
+      const resultIndex = GLOBAL_DATA.auditResult.findIndex(res => res.store === storeName && res.time === latestResult.time);
+      if (resultIndex !== -1) {
+        GLOBAL_DATA.auditResult[resultIndex].read = true;
+        saveToRepo();
+      }
+    }
+
     function exportData() {
       const dataStr = JSON.stringify(GLOBAL_DATA, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -759,21 +1126,23 @@
       showToast('数据导出成功，请上传到GitHub仓库');
     }
 
-    // 导入数据（管理员专属）
     function importData(file) {
-      if (!file) {
-        showToast('请选择store_data.json文件');
-        return;
-      }
+      if (!file) { showToast('请选择store_data.json文件'); return; }
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
           const newData = JSON.parse(e.target.result);
-          GLOBAL_DATA = newData;
+          GLOBAL_DATA = {
+            renewalApply: [],
+            auditResult: [],
+            dataVersion: 1,
+            ...newData
+          };
           await saveToRepo();
           renderUserList();
           renderRenewalLog();
           renderUseLog();
+          renderRenewalApply();
           loadQrcodePreview();
           showToast('数据导入成功');
         } catch (error) {
@@ -783,8 +1152,6 @@
       reader.readAsText(file);
     }
 
-    // --------------- 注册/登录相关 ---------------
-    // 切换登录/注册标签
     function switchAuthTab() {
       el.loginTab.addEventListener('click', () => {
         el.loginTab.classList.add('active');
@@ -796,7 +1163,6 @@
         el.registerSuccess.style.display = 'none';
         el.registerInfo.style.display = 'none';
       });
-      
       el.registerTab.addEventListener('click', () => {
         el.registerTab.classList.add('active');
         el.loginTab.classList.remove('active');
@@ -809,29 +1175,21 @@
       });
     }
 
-    // 手机号注册
     async function register() {
       const phone = el.registerPhone.value.trim();
-      // 手机号验证
       if (!phone || phone.length !== 11 || !/^1[3-9]\d{9}$/.test(phone)) {
         showRegisterTip('请输入有效的11位手机号码');
         return;
       }
-      // 检查手机号是否已注册
       const isPhoneRegistered = GLOBAL_DATA.userList.some(u => u.phone === phone);
       if (isPhoneRegistered) {
         showRegisterTip('该手机号已注册，请直接登录');
         return;
       }
-      // 生成递增账号（store0188开始）+ 简单密码（手机号后6位）
       const username = generateIncrementalUsername();
-      const password = phone.slice(-6); // 密码=手机号后6位，简单好记
-      
-      // 计算试用到期时间（30天）
+      const password = phone.slice(-6);
       const expireDate = new Date();
       expireDate.setDate(expireDate.getDate() + SYSTEM_CONFIG.trialExpireDays);
-      
-      // 创建用户数据
       const newUser = {
         id: 'user_' + Date.now(),
         username: username,
@@ -843,81 +1201,53 @@
         isTrial: true,
         trialStart: formatDate(new Date())
       };
-      
-      // 添加到用户列表（管理员后台可直接看到）
       GLOBAL_DATA.userList.push(newUser);
+      GLOBAL_DATA.dataVersion++;
       await saveToRepo();
-      
-      // 显示注册成功信息
       el.registerTip.style.display = 'none';
       el.registerSuccess.style.display = 'block';
       el.registerInfo.style.display = 'block';
       el.regUsername.textContent = username;
       el.regPassword.textContent = password;
       showRegisterTip('注册成功！请保存好你的账号密码', false);
-      
-      // 清空输入框
       el.registerPhone.value = '';
-      // 记录日志
       recordUseLog(`新用户注册：${phone}（账号：${username}，免费试用30天）`);
     }
 
-    // 登录验证
     async function login() {
       const username = el.loginUsername.value.trim();
       const password = el.loginPassword.value.trim();
-      if (!username || !password) {
-        showAuthTip('用户名和密码不能为空');
-        return;
-      }
-      // 查找账号
+      if (!username || !password) { showAuthTip('用户名和密码不能为空'); return; }
       const user = GLOBAL_DATA.userList.find(u => u.username === username && u.password === password);
-      if (!user) {
-        showAuthTip('用户名或密码错误');
-        return;
-      }
-      if (user.status === 'disable') {
-        showAuthTip('账号已被管理员禁用，请联系管理员');
-        return;
-      }
-      if (checkUserExpire(user)) {
-        showAuthTip('账号已到期，请续费');
-        showExpirePayModal();
-        return;
-      }
-      // 门店账号登录校验（管理员账号跳过）
+      if (!user) { showAuthTip('用户名或密码错误'); return; }
+      if (user.status === 'disable') { showAuthTip('账号已被管理员禁用，请联系管理员'); return; }
+      if (checkUserExpire(user)) { showAuthTip('账号已到期，请续费'); showExpirePayModal(); return; }
       const currentDeviceId = getDeviceId();
       if (user.role === 'user') {
-        // 检查该账号是否已在其他设备登录
         const session = GLOBAL_DATA.loginSessions[username];
         if (session) {
-          // 1. 已登录且不是当前设备 → 拒绝登录
           if (session.deviceId !== currentDeviceId) {
             showAuthTip('该账号已在其他设备登录，如需更换设备，请先在原设备退出登录');
             return;
           }
-          // 2. 已登录且是当前设备 → 允许重新登录
           showAuthTip('检测到您已登录，将重新进入系统', false);
         }
-        // 记录当前设备登录会话
         GLOBAL_DATA.loginSessions[username] = {
           deviceId: currentDeviceId,
           loginTime: Date.now()
         };
-        // 保存会话到本地
         await saveToRepo();
       }
-      // 登录成功
       LOCAL_STATE.currentUser = user;
       LOCAL_STATE.isLogin = true;
+      LOCAL_STATE.localDataVersion = GLOBAL_DATA.dataVersion;
       await recordUseLog(`登录系统（设备ID：${currentDeviceId.substring(0, 8)}...）`);
       showMainPage();
+      if (user.role === 'user') startSyncTimer();
     }
 
-    // 退出登录
     function logout() {
       if (confirm('确定退出？当前点货数据会保留')) {
-        // 门店账号退出时，清理登录会话
         if (LOCAL_STATE.currentUser && LOCAL_STATE.currentUser.role === 'user') {
           delete GLOBAL_DATA.loginSessions[LOCAL_STATE.currentUser.username];
           saveToRepo();
@@ -929,18 +1259,18 @@
       }
     }
 
-    // 强制退出
     function forceLogout() {
-      // 清理当前设备的登录会话（如果是门店账号）
+      if (LOCAL_STATE.cameraStream) {
+        LOCAL_STATE.cameraStream.getTracks().forEach(track => track.stop());
+        LOCAL_STATE.cameraStream = null;
+      }
       if (LOCAL_STATE.currentUser && LOCAL_STATE.currentUser.role === 'user') {
         delete GLOBAL_DATA.loginSessions[LOCAL_STATE.currentUser.username];
         saveToRepo();
       }
-      
       LOCAL_STATE.isLogin = false;
       LOCAL_STATE.currentUser = null;
       el.mainPage.style.display = 'none';
-      // 回到登录标签
       el.loginTab.classList.add('active');
       el.registerTab.classList.remove('active');
       el.loginForm.style.display = 'block';
@@ -951,25 +1281,21 @@
       showToast('已退出登录');
     }
 
-    // 显示主页面
     function showMainPage() {
-      // 隐藏登录/注册页面，显示主页面
       document.querySelector('.auth-container').style.display = 'none';
       el.mainPage.style.display = 'block';
-      // 管理员按钮仅管理员可见
       const isAdmin = LOCAL_STATE.currentUser.role === 'admin';
       el.adminBtn.style.display = isAdmin ? 'block' : 'none';
       el.changeAdminPwdBtn.style.display = isAdmin ? 'block' : 'none';
-      el.changeStorePwdBtn.style.display = isAdmin ? 'none' : 'block'; // 门店用户显示修改密码按钮
-      // 更新用户信息
+      el.changeStorePwdBtn.style.display = isAdmin ? 'none' : 'block';
       el.currentStoreName.textContent = `当前门店：${LOCAL_STATE.currentUser.username}`;
       if (isAdmin) {
         el.expireInfo.textContent = '管理员账号，永久有效';
         el.expireInfo.className = 'expire-info';
-        // 检查未读续费提醒
         if (GLOBAL_DATA.unreadRenewal.length > 0) showRenewalNotice(GLOBAL_DATA.unreadRenewal[0]);
         renderRenewalLog();
         renderUseLog();
+        renderRenewalApply();
       } else {
         const diffDays = getDateDiff(new Date(), new Date(LOCAL_STATE.currentUser.expireDate));
         const isTrial = LOCAL_STATE.currentUser.isTrial;
@@ -987,13 +1313,12 @@
           el.expireInfo.className = 'expire-info';
         }
       }
-      // 更新点货UI
+      initCameraScan();
       updateProgress();
       renderGoods();
       renderDiffs();
     }
 
-    // --------------- 管理员功能 ---------------
     function adminAuth() {
       const pwd = el.adminPassword.value.trim();
       if (!pwd) { showToast('请输入管理员密码'); return; }
@@ -1003,7 +1328,7 @@
       el.adminManage.style.display = 'block';
       loadQrcodePreview();
       renderUserList();
-      // 绑定日志展开/收起
+      renderRenewalApply();
       el.toggleRenewalLog.addEventListener('click', () => {
         if (el.renewalLogList.style.display === 'none') {
           el.renewalLogList.style.display = 'block';
@@ -1022,9 +1347,17 @@
           el.toggleUseLog.textContent = '展开';
         }
       });
+      el.toggleAuditList.addEventListener('click', () => {
+        if (el.auditList.style.display === 'none') {
+          el.auditList.style.display = 'block';
+          el.toggleAuditList.textContent = '收起';
+        } else {
+          el.auditList.style.display = 'none';
+          el.toggleAuditList.textContent = '展开';
+        }
+      });
     }
 
-    // 渲染门店列表
     function renderUserList() {
       el.userList.innerHTML = '';
       const storeUsers = GLOBAL_DATA.userList.filter(u => u.role === 'user');
@@ -1032,7 +1365,6 @@
         el.userList.innerHTML = '<div style="text-align:center; color:#999; padding:15px; font-size:14px;">暂无门店账号</div>';
         return;
       }
-      
       storeUsers.forEach(user => {
         const isExpire = checkUserExpire(user);
         const isTrial = user.isTrial ? '(试用中)' : '';
@@ -1043,12 +1375,13 @@
         const expireTag = isExpire ? '<span style="color:#f5222d;">(已过期)</span>' : '';
         const statusTag = user.status === 'disable' ? '<span style="color:#f5222d;">(已禁用)</span>' : '';
         const phoneTag = user.phone ? `(${user.phone})` : '';
-        
+        const hasPendingApply = GLOBAL_DATA.renewalApply.some(apply => apply.store === user.username && apply.status === 'pending');
+        const applyTag = hasPendingApply ? '<span style="color:#ff7a45;">(有续费申请)</span>' : '';
         const item = document.createElement('div');
         item.className = 'user-item';
         item.innerHTML = `
           <div>
-            <div class="user-info">${user.username} ${phoneTag} ${isTrial} ${expireTag} ${statusTag}</div>
+            <div class="user-info">${user.username} ${phoneTag} ${isTrial} ${expireTag} ${statusTag} ${applyTag}</div>
             <div class="user-expire">有效期至：${user.expireDate} ${!isExpire ? `(剩余${diffDays}天)` : ''}</div>
           </div>
           <div>
@@ -1061,22 +1394,19 @@
         `;
         el.userList.appendChild(item);
       });
-      
-      // 绑定禁用/启用
       document.querySelectorAll('.disable-btn, .enable-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const userId = btn.getAttribute('data-id');
           const user = GLOBAL_DATA.userList.find(u => u.id === userId);
           if (user) {
             user.status = user.status === 'enable' ? 'disable' : 'enable';
+            GLOBAL_DATA.dataVersion++;
             await saveToRepo();
             renderUserList();
             showToast(`账号已${user.status === 'enable' ? '启用' : '禁用'}`);
           }
         });
       });
-      
-      // 绑定编辑
       document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const userId = btn.getAttribute('data-id');
@@ -1090,73 +1420,57 @@
           el.userModal.style.display = 'flex';
         });
       });
-      
-      // 绑定重置密码
       document.querySelectorAll('.reset-pwd-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const userId = btn.getAttribute('data-id');
           const userName = btn.getAttribute('data-name');
           el.resetStoreUserId.value = userId;
           el.resetPwdTitle.textContent = `重置【${userName}】的密码`;
-          el.newStorePwd.value = '';
-          el.confirmNewStorePwd.value = '';
+          el.newStorePwdReset.value = '';
+          el.confirmNewStorePwdReset.value = '';
           el.resetStorePwdModal.style.display = 'flex';
         });
       });
-      
-      // 绑定踢下线
       document.querySelectorAll('.kick-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const userName = btn.getAttribute('data-name');
           if (confirm(`确定将【${userName}】账号从所有设备踢下线吗？`)) {
-            // 清理该账号的登录会话
             delete GLOBAL_DATA.loginSessions[userName];
+            GLOBAL_DATA.dataVersion++;
             await saveToRepo();
             showToast(`已将【${userName}】踢下线，该账号需重新登录`);
           }
         });
       });
-      
-      // 绑定删除按钮事件
       document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const userId = btn.getAttribute('data-id');
           const userName = btn.getAttribute('data-name');
-          
-          // 二次确认，防止误删
-          if (!confirm(`确定要永久删除【${userName}】账号吗？删除后无法恢复！`)) {
-            return;
-          }
-          
-          // 从用户列表中删除
+          if (!confirm(`确定要永久删除【${userName}】账号吗？删除后无法恢复！`)) return;
           GLOBAL_DATA.userList = GLOBAL_DATA.userList.filter(u => u.id !== userId);
-          // 同时清理该账号的登录会话
           delete GLOBAL_DATA.loginSessions[userName];
-          // 保存数据
+          GLOBAL_DATA.renewalApply = GLOBAL_DATA.renewalApply.filter(apply => apply.store !== userName);
+          GLOBAL_DATA.dataVersion++;
           await saveToRepo();
-          
-          // 更新UI
           renderUserList();
+          renderRenewalApply();
           showToast(`已永久删除【${userName}】账号`);
-          // 记录日志
           recordUseLog(`管理员删除门店账号：${userName}`);
         });
       });
     }
 
-    // 新增门店账号
     function addUser() {
       LOCAL_STATE.editUserId = null;
       el.userModalTitle.textContent = '新增门店账号';
       const defaultExpire = new Date();
       defaultExpire.setDate(defaultExpire.getDate() + SYSTEM_CONFIG.defaultExpireDays);
-      el.userUsername.value = generateIncrementalUsername(); // 自动填充递增账号
+      el.userUsername.value = generateIncrementalUsername();
       el.userPassword.value = '';
       el.userExpireDate.value = formatDate(defaultExpire);
       el.userModal.style.display = 'flex';
     }
 
-    // 保存门店账号
     async function saveUser() {
       const username = el.userUsername.value.trim();
       const password = el.userPassword.value.trim();
@@ -1183,7 +1497,7 @@
         role: 'user',
         status: 'enable',
         id: LOCAL_STATE.editUserId || 'user_' + Date.now(),
-        isTrial: false // 手动新增的账号不是试用账号
+        isTrial: false
       };
       if (LOCAL_STATE.editUserId) {
         const index = GLOBAL_DATA.userList.findIndex(u => u.id === LOCAL_STATE.editUserId);
@@ -1195,13 +1509,12 @@
         GLOBAL_DATA.userList.push(userData);
         showToast('门店账号新增成功');
       }
-      // 保存到本地
+      GLOBAL_DATA.dataVersion++;
       await saveToRepo();
       el.userModal.style.display = 'none';
       renderUserList();
     }
 
-    // 加载收款码预览
     function loadQrcodePreview() {
       el.adminContactInput.value = GLOBAL_DATA.contactInfo;
       if (GLOBAL_DATA.payQrcode) {
@@ -1217,544 +1530,346 @@
       el.payContactInfo.innerHTML = `管理员联系方式：<br>${GLOBAL_DATA.contactInfo}`;
     }
 
-    // 上传收款二维码
-async function uploadQrcode(file) {
-  if (!file) {
-    showToast('请选择收款二维码图片');
-    return;
-  }
-  if (!file.type.startsWith('image/')) {
-    showToast('请选择图片文件（jpg/png等）');
-    return;
-  }
-  // 转Base64
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    GLOBAL_DATA.payQrcode = e.target.result;
-    await saveToRepo();
-    loadQrcodePreview();
-    showToast('收款二维码上传成功');
-  };
-  reader.readAsDataURL(file);
-}
+    async function uploadQrcode(file) {
+      if (!file) { showToast('请选择收款二维码图片'); return; }
+      if (!file.type.startsWith('image/')) { showToast('请选择图片文件（jpg/png等）'); return; }
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        GLOBAL_DATA.payQrcode = e.target.result;
+        await saveToRepo();
+        loadQrcodePreview();
+        showToast('收款二维码上传成功');
+      };
+      reader.readAsDataURL(file);
+    }
 
-// 保存管理员联系方式
-async function saveContactInfo() {
-  const contact = el.adminContactInput.value.trim();
-  if (!contact) {
-    showToast('联系方式不能为空');
-    return;
-  }
-  GLOBAL_DATA.contactInfo = contact;
-  await saveToRepo();
-  loadQrcodePreview();
-  showToast('联系方式保存成功');
-}
+    async function saveContactInfo() {
+      const contact = el.adminContactInput.value.trim();
+      if (!contact) { showToast('联系方式不能为空'); return; }
+      GLOBAL_DATA.contactInfo = contact;
+      await saveToRepo();
+      loadQrcodePreview();
+      showToast('联系方式保存成功');
+    }
 
-// 管理员修改自身密码
-async function changeAdminPassword() {
-  const oldPwd = el.oldAdminPwd.value.trim();
-  const newPwd = el.newAdminPwd.value.trim();
-  const confirmNewPwd = el.confirmNewAdminPwd.value.trim();
-  if (oldPwd !== LOCAL_STATE.currentUser.password) {
-    showToast('原密码输入错误');
-    return;
-  }
-  if (newPwd.length < SYSTEM_CONFIG.minPwdLength) {
-    showToast(`新密码至少${SYSTEM_CONFIG.minPwdLength}位`);
-    return;
-  }
-  if (newPwd !== confirmNewPwd) {
-    showToast('两次新密码输入不一致');
-    return;
-  }
-  if (newPwd === oldPwd) {
-    showToast('新密码不能与原密码相同');
-    return;
-  }
-  LOCAL_STATE.currentUser.password = newPwd;
-  const adminIndex = GLOBAL_DATA.userList.findIndex(u => u.role === 'admin');
-  if (adminIndex !== -1) {
-    GLOBAL_DATA.userList[adminIndex].password = newPwd;
-  }
-  await saveToRepo();
-  el.changeAdminPwdModal.style.display = 'none';
-  showToast('管理员密码修改成功，请重新登录');
-  forceLogout();
-}
+    async function changeAdminPassword() {
+      const oldPwd = el.oldAdminPwd.value.trim();
+      const newPwd = el.newAdminPwd.value.trim();
+      const confirmNewPwd = el.confirmNewAdminPwd.value.trim();
+      if (oldPwd !== LOCAL_STATE.currentUser.password) { showToast('原密码输入错误'); return; }
+      if (newPwd.length < SYSTEM_CONFIG.minPwdLength) { showToast(`新密码至少${SYSTEM_CONFIG.minPwdLength}位`); return; }
+      if (newPwd !== confirmNewPwd) { showToast('两次新密码输入不一致'); return; }
+      if (newPwd === oldPwd) { showToast('新密码不能与原密码相同'); return; }
+      LOCAL_STATE.currentUser.password = newPwd;
+      const adminIndex = GLOBAL_DATA.userList.findIndex(u => u.role === 'admin');
+      if (adminIndex !== -1) GLOBAL_DATA.userList[adminIndex].password = newPwd;
+      GLOBAL_DATA.dataVersion++;
+      await saveToRepo();
+      el.changeAdminPwdModal.style.display = 'none';
+      showToast('管理员密码修改成功，请重新登录');
+      forceLogout();
+    }
 
-// 门店用户自行修改密码
-async function changeStorePassword() {
-  const oldPwd = el.oldStorePwd.value.trim();
-  const newPwd = el.newStorePwd.value.trim();
-  const confirmNewPwd = el.confirmNewStorePwd.value.trim();
-  if (oldPwd !== LOCAL_STATE.currentUser.password) {
-    showToast('原密码输入错误');
-    return;
-  }
-  if (newPwd.length < SYSTEM_CONFIG.minPwdLength) {
-    showToast(`新密码至少${SYSTEM_CONFIG.minPwdLength}位`);
-    return;
-  }
-  if (newPwd !== confirmNewPwd) {
-    showToast('两次新密码输入不一致');
-    return;
-  }
-  if (newPwd === oldPwd) {
-    showToast('新密码不能与原密码相同');
-    return;
-  }
-  LOCAL_STATE.currentUser.password = newPwd;
-  const userIndex = GLOBAL_DATA.userList.findIndex(u => u.id === LOCAL_STATE.currentUser.id);
-  if (userIndex !== -1) {
-    GLOBAL_DATA.userList[userIndex].password = newPwd;
-  }
-  await saveToRepo();
-  el.changeStorePwdModal.style.display = 'none';
-  showToast('门店密码修改成功，请重新登录');
-  forceLogout();
-}
+    async function changeStorePassword() {
+      const oldPwd = el.oldStorePwd.value.trim();
+      const newPwd = el.newStorePwd.value.trim();
+      const confirmNewPwd = el.confirmNewStorePwd.value.trim();
+      if (oldPwd !== LOCAL_STATE.currentUser.password) { showToast('原密码输入错误'); return; }
+      if (newPwd.length < SYSTEM_CONFIG.minPwdLength) { showToast(`新密码至少${SYSTEM_CONFIG.minPwdLength}位`); return; }
+      if (newPwd !== confirmNewPwd) { showToast('两次新密码输入不一致'); return; }
+      if (newPwd === oldPwd) { showToast('新密码不能与原密码相同'); return; }
+      LOCAL_STATE.currentUser.password = newPwd;
+      const userIndex = GLOBAL_DATA.userList.findIndex(u => u.id === LOCAL_STATE.currentUser.id);
+      if (userIndex !== -1) GLOBAL_DATA.userList[userIndex].password = newPwd;
+      GLOBAL_DATA.dataVersion++;
+      await saveToRepo();
+      el.changeStorePwdModal.style.display = 'none';
+      showToast('门店密码修改成功，请重新登录');
+      forceLogout();
+    }
 
-// 管理员重置门店账号密码
-async function resetStorePassword() {
-  const newPwd = el.newStorePwd.value.trim();
-  const confirmNewPwd = el.confirmNewStorePwd.value.trim();
-  const storeUserId = el.resetStoreUserId.value;
-  if (newPwd.length < SYSTEM_CONFIG.minPwdLength) {
-    showToast(`新密码至少${SYSTEM_CONFIG.minPwdLength}位`);
-    return;
-  }
-  if (newPwd !== confirmNewPwd) {
-    showToast('两次新密码输入不一致');
-    return;
-  }
-  const storeIndex = GLOBAL_DATA.userList.findIndex(u => u.id === storeUserId);
-  if (storeIndex !== -1) {
-    GLOBAL_DATA.userList[storeIndex].password = newPwd;
-    await saveToRepo();
-    el.resetStorePwdModal.style.display = 'none';
-    showToast('门店密码重置成功');
-    renderUserList();
-  } else {
-    showToast('未找到该门店账号');
-  }
-}
-
-// 渲染续期日志
-function renderRenewalLog() {
-  if (GLOBAL_DATA.renewalLog.length === 0) {
-    el.renewalLogList.innerHTML = '暂无续期记录';
-    return;
-  }
-  el.renewalLogList.innerHTML = '';
-  GLOBAL_DATA.renewalLog.forEach(log => {
-    const item = document.createElement('div');
-    item.className = 'log-item';
-    item.innerHTML = `${log.time} | ${log.store} | 续期${log.days}天 | 收费${log.money}元`;
-    el.renewalLogList.appendChild(item);
-  });
-}
-
-// 渲染使用日志
-function renderUseLog() {
-  if (GLOBAL_DATA.useLog.length === 0) {
-    el.useLogList.innerHTML = '暂无门店使用记录';
-    return;
-  }
-  el.useLogList.innerHTML = '';
-  GLOBAL_DATA.useLog.forEach(log => {
-    const item = document.createElement('div');
-    item.className = 'use-log-item';
-    item.innerHTML = `
-      <div>${log.user}：${log.action}</div>
-      <div class="use-log-time">${log.time}</div>
-    `;
-    el.useLogList.appendChild(item);
-  });
-}
-
-// 显示到期付费弹窗
-function showExpirePayModal() {
-  el.expirePayModal.style.display = 'flex';
-  loadQrcodePreview();
-}
-
-// 显示续费提醒弹窗
-function showRenewalNotice(log) {
-  el.renewalNoticeInfo.innerHTML = `
-    门店：${log.store}<br>
-    续期天数：${log.days}天<br>
-    收费金额：${log.money}元<br>
-    续费时间：${log.time}
-  `;
-  el.renewalNoticeModal.style.display = 'flex';
-  GLOBAL_DATA.unreadRenewal = GLOBAL_DATA.unreadRenewal.filter(item => item.store !== log.store);
-  saveToRepo();
-}
-
-// 确认续费
-async function confirmExpire() {
-  const days = Number(el.expireAddDays.value);
-  if (!days || days < 7) {
-    showToast('续期天数最少7天');
-    return;
-  }
-  const userIndex = GLOBAL_DATA.userList.findIndex(u => u.username === LOCAL_STATE.currentUser.username);
-  if (userIndex === -1) {
-    showToast('账号不存在');
-    return;
-  }
-  const newExpire = new Date(GLOBAL_DATA.userList[userIndex].expireDate);
-  newExpire.setDate(newExpire.getDate() + days);
-  GLOBAL_DATA.userList[userIndex].expireDate = formatDate(newExpire);
-  if (GLOBAL_DATA.userList[userIndex].isTrial) {
-    GLOBAL_DATA.userList[userIndex].isTrial = false;
-  }
-  const log = {
-    store: LOCAL_STATE.currentUser.username,
-    days: days,
-    money: 0,
-    time: formatDateTime(new Date()),
-    operator: '门店自助'
-  };
-  GLOBAL_DATA.renewalLog.unshift(log);
-  GLOBAL_DATA.unreadRenewal.push(log);
-  await saveToRepo();
-  el.expirePayModal.style.display = 'none';
-  showToast('续期申请已提交，请等待管理员确认');
-  forceLogout();
-}
-
-// --------------- 商品点货功能 ---------------
-function readExcel(file) {
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-      const firstItem = jsonData[0] || {};
-      const hasCoreField = firstItem.hasOwnProperty('商品条码') && firstItem.hasOwnProperty('商品名称') && firstItem.hasOwnProperty('配送数量');
-      if (!hasCoreField) {
-        showToast('请使用指定模板导入！');
-        return;
+    async function resetStorePassword() {
+      const newPwd = el.newStorePwdReset.value.trim();
+      const confirmNewPwd = el.confirmNewStorePwdReset.value.trim();
+      const storeUserId = el.resetStoreUserId.value;
+      if (newPwd.length < SYSTEM_CONFIG.minPwdLength) { showToast(`新密码至少${SYSTEM_CONFIG.minPwdLength}位`); return; }
+      if (newPwd !== confirmNewPwd) { showToast('两次新密码输入不一致'); return; }
+      const storeIndex = GLOBAL_DATA.userList.findIndex(u => u.id === storeUserId);
+      if (storeIndex !== -1) {
+        GLOBAL_DATA.userList[storeIndex].password = newPwd;
+        GLOBAL_DATA.dataVersion++;
+        await saveToRepo();
+        el.resetStorePwdModal.style.display = 'none';
+        showToast('门店密码重置成功');
+        renderUserList();
+      } else {
+        showToast('未找到该门店账号');
       }
-      LOCAL_STATE.goods = jsonData.map(item => ({
-        barcode: String(item['商品条码']).trim() || '',
-        name: String(item['商品名称']).trim() || '',
-        plan: Number(item['配送数量']) || 0,
-        actual: 0,
-        checked: false
-      })).filter(goods => goods.barcode && goods.name && goods.plan > 0);
-      LOCAL_STATE.total = LOCAL_STATE.goods.length;
-      LOCAL_STATE.checked = 0;
-      LOCAL_STATE.diffs = [];
-      recordUseLog(`上传配送单：${file.name}（共${LOCAL_STATE.total}个商品）`);
-      el.fileInfo.textContent = `已加载：${file.name}（共${LOCAL_STATE.total}个商品）`;
-      el.deleteBtn.style.display = 'block';
-      el.checkCard.style.display = 'block';
-      el.goodsCard.style.display = 'block';
-      el.emptyTip.style.display = 'none';
+    }
+
+    function renderRenewalLog() {
+      if (GLOBAL_DATA.renewalLog.length === 0) { el.renewalLogList.innerHTML = '暂无续期记录'; return; }
+      el.renewalLogList.innerHTML = '';
+      GLOBAL_DATA.renewalLog.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `${log.time} | ${log.store} | 续期${log.days}天 | 收费${log.money}元`;
+        el.renewalLogList.appendChild(item);
+      });
+    }
+
+    function renderUseLog() {
+      if (GLOBAL_DATA.useLog.length === 0) { el.useLogList.innerHTML = '暂无门店使用记录'; return; }
+      el.useLogList.innerHTML = '';
+      GLOBAL_DATA.useLog.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'use-log-item';
+        item.innerHTML = `<div>${log.user}：${log.action}</div><div class="use-log-time">${log.time}</div>`;
+        el.useLogList.appendChild(item);
+      });
+    }
+
+    function showExpirePayModal() {
+      el.expirePayModal.style.display = 'flex';
+      loadQrcodePreview();
+    }
+
+    function showRenewalNotice(log) {
+      el.renewalNoticeInfo.innerHTML = `门店：${log.store}<br>续期天数：${log.days}天<br>收费金额：${log.money}元<br>续费时间：${log.time}`;
+      el.renewalNoticeModal.style.display = 'flex';
+      GLOBAL_DATA.unreadRenewal = GLOBAL_DATA.unreadRenewal.filter(item => item.store !== log.store);
+      saveToRepo();
+    }
+
+    function readExcel(file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          const firstItem = jsonData[0] || {};
+          const hasCoreField = firstItem.hasOwnProperty('商品条码') && firstItem.hasOwnProperty('商品名称') && firstItem.hasOwnProperty('配送数量');
+          if (!hasCoreField) { showToast('请使用指定模板导入！'); return; }
+          LOCAL_STATE.goods = jsonData.map(item => ({
+            barcode: String(item['商品条码']).trim() || '',
+            name: String(item['商品名称']).trim() || '',
+            plan: Number(item['配送数量']) || 0,
+            actual: 0,
+            checked: false
+          })).filter(goods => goods.barcode && goods.name && goods.plan > 0);
+          LOCAL_STATE.total = LOCAL_STATE.goods.length;
+          LOCAL_STATE.checked = 0;
+          LOCAL_STATE.diffs = [];
+          recordUseLog(`上传配送单：${file.name}（共${LOCAL_STATE.total}个商品）`);
+          el.fileInfo.textContent = `已加载：${file.name}（共${LOCAL_STATE.total}个商品）`;
+          el.deleteBtn.style.display = 'block';
+          el.checkCard.style.display = 'block';
+          el.goodsCard.style.display = 'block';
+          el.emptyTip.style.display = 'none';
+          updateProgress();
+          renderGoods();
+          showToast('配送单模板导入成功');
+        } catch (error) {
+          showToast('Excel文件解析失败，请检查模板格式');
+          console.error(error);
+        }
+      };
+      reader.onerror = function() { showToast('文件读取失败'); };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function deleteGoods() {
+      if (confirm('确定要删除当前配送单吗？删除后无法恢复')) {
+        recordUseLog('删除当前配送单');
+        LOCAL_STATE.goods = [];
+        LOCAL_STATE.total = 0;
+        LOCAL_STATE.checked = 0;
+        LOCAL_STATE.diffs = [];
+        el.fileInfo.textContent = '';
+        el.deleteBtn.style.display = 'none';
+        el.checkCard.style.display = 'none';
+        el.goodsCard.style.display = 'none';
+        el.diffCard.style.display = 'none';
+        el.emptyTip.style.display = 'block';
+        updateProgress();
+        renderGoods();
+        renderDiffs();
+        showToast('配送单已删除');
+      }
+    }
+
+    function findGoods(barcode) {
+      barcode = barcode.trim();
+      if (!barcode) return null;
+      let goods = LOCAL_STATE.goods.find(item => item.barcode === barcode);
+      if (!goods && barcode.length === 4) {
+        goods = LOCAL_STATE.goods.find(item => item.barcode.slice(-4) === barcode);
+      }
+      return goods;
+    }
+
+    function openQuantityModal(goods) {
+      LOCAL_STATE.currentGoods = goods;
+      el.quantityTitle.textContent = `商品：${goods.name}（计划：${goods.plan}）`;
+      el.quantityInput.value = goods.actual || 1;
+      el.quantityModal.style.display = 'flex';
+    }
+
+    function confirmQuantity() {
+      const actual = Number(el.quantityInput.value);
+      if (isNaN(actual) || actual < 0) { showToast('请输入有效的数量'); return; }
+      if (!LOCAL_STATE.currentGoods) { showToast('未找到商品'); return; }
+      if (!LOCAL_STATE.currentGoods.checked) {
+        LOCAL_STATE.checked++;
+        LOCAL_STATE.currentGoods.checked = true;
+      }
+      LOCAL_STATE.currentGoods.actual = actual;
+      if (actual !== LOCAL_STATE.currentGoods.plan) {
+        const diff = actual - LOCAL_STATE.currentGoods.plan;
+        const diffItem = {
+          name: LOCAL_STATE.currentGoods.name,
+          barcode: LOCAL_STATE.currentGoods.barcode,
+          plan: LOCAL_STATE.currentGoods.plan,
+          actual: actual,
+          diff: diff
+        };
+        const existingIndex = LOCAL_STATE.diffs.findIndex(d => d.barcode === diffItem.barcode);
+        if (existingIndex !== -1) LOCAL_STATE.diffs[existingIndex] = diffItem;
+        else LOCAL_STATE.diffs.push(diffItem);
+        el.diffInfo.innerHTML = `商品：${LOCAL_STATE.currentGoods.name}<br>计划数量：${LOCAL_STATE.currentGoods.plan}<br>实到数量：${actual}<br>差异：${diff > 0 ? '+' : ''}${diff}`;
+        el.diffModal.style.display = 'flex';
+        vibrate();
+      }
+      el.quantityModal.style.display = 'none';
       updateProgress();
       renderGoods();
-      showToast('配送单模板导入成功');
-    } catch (error) {
-      showToast('Excel文件解析失败，请检查模板格式');
-      console.error(error);
+      renderDiffs();
     }
-  };
-  reader.onerror = function() {
-    showToast('文件读取失败');
-  };
-  reader.readAsArrayBuffer(file);
-}
 
-// 删除当前配送单
-function deleteGoods() {
-  if (confirm('确定要删除当前配送单吗？删除后无法恢复')) {
-    recordUseLog('删除当前配送单');
-    LOCAL_STATE.goods = [];
-    LOCAL_STATE.total = 0;
-    LOCAL_STATE.checked = 0;
-    LOCAL_STATE.diffs = [];
-    el.fileInfo.textContent = '';
-    el.deleteBtn.style.display = 'none';
-    el.checkCard.style.display = 'none';
-    el.goodsCard.style.display = 'none';
-    el.diffCard.style.display = 'none';
-    el.emptyTip.style.display = 'block';
-    updateProgress();
-    renderGoods();
-    renderDiffs();
-    showToast('配送单已删除');
-  }
-}
-
-// 查找商品
-function findGoods(barcode) {
-  barcode = barcode.trim();
-  if (!barcode) return null;
-  let goods = LOCAL_STATE.goods.find(item => item.barcode === barcode);
-  if (!goods && barcode.length === 4) {
-    goods = LOCAL_STATE.goods.find(item => item.barcode.slice(-4) === barcode);
-  }
-  return goods;
-}
-
-// 打开数量输入弹窗
-function openQuantityModal(goods) {
-  LOCAL_STATE.currentGoods = goods;
-  el.quantityTitle.textContent = `${goods.name}（配送：${goods.plan}件）`;
-  el.quantityInput.value = goods.actual || 0;
-  el.quantityModal.style.display = 'flex';
-}
-
-// 确认数量输入
-function confirmQuantity() {
-  const actual = Number(el.quantityInput.value) || 0;
-  if (LOCAL_STATE.currentGoods) {
-    LOCAL_STATE.currentGoods.actual = actual;
-    LOCAL_STATE.currentGoods.checked = true;
-    LOCAL_STATE.checked = LOCAL_STATE.goods.filter(item => item.checked).length;
-    checkDiff(LOCAL_STATE.currentGoods);
-    recordUseLog(`核对商品：${LOCAL_STATE.currentGoods.name}（条码：${LOCAL_STATE.currentGoods.barcode}，实到${actual}件）`);
-    el.quantityModal.style.display = 'none';
-    updateProgress();
-    renderGoods();
-    renderDiffs();
-    el.barcodeInput.value = '';
-    showToast('数量已更新');
-  }
-}
-
-// 检查差异
-function checkDiff(goods) {
-  if (goods.plan !== goods.actual) {
-    const index = LOCAL_STATE.diffs.findIndex(item => item.barcode === goods.barcode);
-    if (index > -1) {
-      LOCAL_STATE.diffs[index] = goods;
-    } else {
-      LOCAL_STATE.diffs.push(goods);
+    function updateProgress() {
+      const percent = LOCAL_STATE.total > 0 ? Math.round((LOCAL_STATE.checked / LOCAL_STATE.total) * 100) : 0;
+      el.progressTip.textContent = `已核对：${LOCAL_STATE.checked} / ${LOCAL_STATE.total}`;
+      el.progressPercent.textContent = `${percent}%`;
+      el.progressFill.style.width = `${percent}%`;
     }
-    vibrate();
-    el.diffInfo.innerHTML = `
-      商品：${goods.name}<br>
-      条码：${goods.barcode}<br>
-      计划数量：${goods.plan}<br>
-      实到数量：${goods.actual}<br>
-      <span style="color:#f5222d;">差异数量：${Math.abs(goods.plan - goods.actual)}</span>
-    `;
-    el.diffModal.style.display = 'flex';
-  } else {
-    LOCAL_STATE.diffs = LOCAL_STATE.diffs.filter(item => item.barcode !== goods.barcode);
-  }
-}
 
-// 更新进度
-function updateProgress() {
-  const percent = LOCAL_STATE.total > 0 ? Math.round((LOCAL_STATE.checked / LOCAL_STATE.total) * 100) : 0;
-  el.progressTip.textContent = `已核对：${LOCAL_STATE.checked} / ${LOCAL_STATE.total}`;
-  el.progressPercent.textContent = `${percent}%`;
-  el.progressFill.style.width = `${percent}%`;
-  if (percent === 100) {
-    recordUseLog(`完成点货（共${LOCAL_STATE.total}个商品，差异${LOCAL_STATE.diffs.length}个）`);
-  }
-}
-
-// 渲染商品列表
-function renderGoods() {
-  if (LOCAL_STATE.goods.length === 0) {
-    el.goodsList.innerHTML = '<div class="empty-tip">暂无商品数据</div>';
-    return;
-  }
-  el.goodsList.innerHTML = '';
-  LOCAL_STATE.goods.forEach(goods => {
-    const item = document.createElement('div');
-    item.className = 'goods-item';
-    const diffClass = goods.plan !== goods.actual ? ' style="color:#f5222d;"' : '';
-    const checkedClass = goods.checked ? ' style="color:#00b42a;"' : '';
-    item.innerHTML = `
-      <div${checkedClass}>${goods.name}</div>
-      <div>条码：${goods.barcode}</div>
-      <div${diffClass}>配送：${goods.plan} | 实到：${goods.actual}</div>
-    `;
-    item.addEventListener('click', () => openQuantityModal(goods));
-    el.goodsList.appendChild(item);
-  });
-}
-
-// 渲染差异列表
-function renderDiffs() {
-  if (LOCAL_STATE.diffs.length === 0) {
-    el.diffCard.style.display = 'none';
-    return;
-  }
-  el.diffCard.style.display = 'block';
-  el.diffList.innerHTML = '';
-  LOCAL_STATE.diffs.forEach(goods => {
-    const item = document.createElement('div');
-    item.className = 'goods-item';
-    item.innerHTML = `
-      <div style="color:#f5222d;">${goods.name}</div>
-      <div>条码：${goods.barcode}</div>
-      <div>计划：${goods.plan} | 实到：${goods.actual} | 差异：${Math.abs(goods.plan - goods.actual)}</div>
-    `;
-    item.addEventListener('click', () => openQuantityModal(goods));
-    el.diffList.appendChild(item);
-  });
-}
-
-// 导出差异报表
-function exportDiff() {
-  if (LOCAL_STATE.diffs.length === 0) {
-    showToast('暂无差异数据');
-    return;
-  }
-  const exportData = LOCAL_STATE.diffs.map(item => ({
-    商品条码: item.barcode,
-    商品名称: item.name,
-    计划数量: item.plan,
-    实到数量: item.actual,
-    差异数量: Math.abs(item.plan - item.actual)
-  }));
-  const ws = XLSX.utils.json_to_sheet(exportData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '差异报表');
-  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([wbout], { type: 'application/octet-stream' });
-  saveAs(blob, `点货差异报表_${formatDate(new Date())}.xlsx`);
-  recordUseLog(`导出差异报表（共${LOCAL_STATE.diffs.length}个差异商品）`);
-  showToast('差异报表导出成功');
-}
-
-// --------------- 事件绑定 ---------------
-function bindEvents() {
-  switchAuthTab();
-  el.loginBtn.addEventListener('click', login);
-  el.loginPassword.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') login();
-  });
-  el.registerBtn.addEventListener('click', register);
-  el.logoutBtn.addEventListener('click', logout);
-  el.uploadBtn.addEventListener('click', () => el.fileInput.click());
-  el.fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) readExcel(file);
-  });
-  el.deleteBtn.addEventListener('click', deleteGoods);
-  el.scanBox.addEventListener('click', () => el.barcodeInput.focus());
-  el.barcodeInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const barcode = el.barcodeInput.value.trim();
-      if (!barcode) {
-        showToast('请输入商品条码');
+    function renderGoods() {
+      if (LOCAL_STATE.goods.length === 0) {
+        el.goodsList.innerHTML = '<div class="empty-tip">暂无商品</div>';
         return;
       }
-      const goods = findGoods(barcode);
-      if (!goods) {
-        showToast('未找到该商品');
-        vibrate();
+      el.goodsList.innerHTML = '';
+      LOCAL_STATE.goods.forEach(goods => {
+        const item = document.createElement('div');
+        item.className = 'goods-item';
+        const status = goods.checked ? '✅' : '⏳';
+        const actualText = goods.checked ? `实到：${goods.actual}` : '未核对';
+        item.innerHTML = `${status} ${goods.name}（${goods.barcode}）<span>计划：${goods.plan} | ${actualText}</span>`;
+        el.goodsList.appendChild(item);
+      });
+    }
+
+    function renderDiffs() {
+      if (LOCAL_STATE.diffs.length === 0) {
+        el.diffCard.style.display = 'none';
         return;
       }
-      openQuantityModal(goods);
+      el.diffCard.style.display = 'block';
+      el.diffList.innerHTML = '';
+      LOCAL_STATE.diffs.forEach(diff => {
+        const item = document.createElement('div');
+        item.className = 'goods-item';
+        const diffColor = diff.diff > 0 ? '#00b42a' : '#f5222d';
+        const diffSign = diff.diff > 0 ? '+' : '';
+        item.innerHTML = `${diff.name}（${diff.barcode}）<span style="color:${diffColor}">计划：${diff.plan} | 实到：${diff.actual} | 差异：${diffSign}${diff.diff}</span>`;
+        el.diffList.appendChild(item);
+      });
     }
-  });
-  el.checkBtn.addEventListener('click', () => {
-    const barcode = el.barcodeInput.value.trim();
-    if (!barcode) {
-      showToast('请输入商品条码');
-      return;
-    }
-    const goods = findGoods(barcode);
-    if (!goods) {
-      showToast('未找到该商品');
-      vibrate();
-      return;
-    }
-    openQuantityModal(goods);
-  });
-  el.cancelQuantity.addEventListener('click', () => {
-    el.quantityModal.style.display = 'none';
-  });
-  el.confirmQuantity.addEventListener('click', confirmQuantity);
-  el.closeDiff.addEventListener('click', () => {
-    el.diffModal.style.display = 'none';
-  });
-  el.cancelAdminAuth.addEventListener('click', () => {
-    el.adminModal.style.display = 'none';
-  });
-  el.confirmAdminAuth.addEventListener('click', adminAuth);
-  el.closeAdminModal.addEventListener('click', () => {
-    el.adminModal.style.display = 'none';
-    el.adminAuth.style.display = 'block';
-    el.adminManage.style.display = 'none';
-  });
-  el.addUserBtn.addEventListener('click', addUser);
-  el.cancelUser.addEventListener('click', () => {
-    el.userModal.style.display = 'none';
-  });
-  el.confirmUser.addEventListener('click', saveUser);
-  el.uploadQrcodeBtn.addEventListener('click', () => {
-    el.qrcodeFileInput.click();
-  });
-  el.qrcodeFileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) uploadQrcode(file);
-  });
-  el.saveContactBtn.addEventListener('click', saveContactInfo);
-  el.changeAdminPwdBtn.addEventListener('click', () => {
-    el.oldAdminPwd.value = '';
-    el.newAdminPwd.value = '';
-    el.confirmNewAdminPwd.value = '';
-    el.changeAdminPwdModal.style.display = 'flex';
-  });
-  el.cancelChangeAdminPwd.addEventListener('click', () => {
-    el.changeAdminPwdModal.style.display = 'none';
-  });
-  el.confirmChangeAdminPwd.addEventListener('click', changeAdminPassword);
-  el.changeStorePwdBtn.addEventListener('click', () => {
-    el.oldStorePwd.value = '';
-    el.newStorePwd.value = '';
-    el.confirmNewStorePwd.value = '';
-    el.changeStorePwdModal.style.display = 'flex';
-  });
-  el.cancelChangeStorePwd.addEventListener('click', () => {
-    el.changeStorePwdModal.style.display = 'none';
-  });
-  el.confirmChangeStorePwd.addEventListener('click', changeStorePassword);
-  el.cancelResetStorePwd.addEventListener('click', () => {
-    el.resetStorePwdModal.style.display = 'none';
-  });
-  el.confirmResetStorePwd.addEventListener('click', resetStorePassword);
-  el.gotoLoginBtn.addEventListener('click', () => {
-    el.expirePayModal.style.display = 'none';
-    forceLogout();
-  });
-  el.confirmExpireBtn.addEventListener('click', confirmExpire);
-  el.closeRenewalNotice.addEventListener('click', () => {
-    el.renewalNoticeModal.style.display = 'none';
-  });
-  el.exportBtn.addEventListener('click', exportDiff);
-  el.exportDataBtn.addEventListener('click', exportData);
-  el.importDataBtn.addEventListener('click', () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
-    fileInput.onchange = (e) => importData(e.target.files[0]);
-    fileInput.click();
-  });
-}
 
-// --------------- 初始化 ---------------
-async function init() {
-  await loadFromRepo();
-  bindEvents();
-  showToast('系统加载完成，数据已同步');
-}
+    function exportDiffReport() {
+      if (LOCAL_STATE.diffs.length === 0) { showToast('暂无差异数据可导出'); return; }
+      const ws = XLSX.utils.json_to_sheet(LOCAL_STATE.diffs.map(d => ({
+        '商品名称': d.name,
+        '商品条码': d.barcode,
+        '计划数量': d.plan,
+        '实到数量': d.actual,
+        '差异数量': d.diff
+      })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '差异报表');
+      XLSX.writeFile(wb, `点货差异报表_${formatDate(new Date())}.xlsx`);
+      recordUseLog(`导出差异报表（共${LOCAL_STATE.diffs.length}条差异）`);
+      showToast('差异报表导出成功');
+    }
 
-init();
+    function bindEvents() {
+      switchAuthTab();
+      el.loginBtn.addEventListener('click', login);
+      el.registerBtn.addEventListener('click', register);
+      el.logoutBtn.addEventListener('click', logout);
+      el.uploadBtn.addEventListener('click', () => el.fileInput.click());
+      el.fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) readExcel(e.target.files[0]); });
+      el.deleteBtn.addEventListener('click', deleteGoods);
+      el.checkBtn.addEventListener('click', () => {
+        const barcode = el.barcodeInput.value.trim();
+        if (!barcode) { showToast('请输入商品条码'); return; }
+        const goods = findGoods(barcode);
+        if (goods) openQuantityModal(goods);
+        else { showToast('未找到该商品'); vibrate(); }
+        el.barcodeInput.value = '';
+      });
+      el.barcodeInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.checkBtn.click(); });
+      el.confirmQuantity.addEventListener('click', confirmQuantity);
+      el.cancelQuantity.addEventListener('click', () => el.quantityModal.style.display = 'none');
+      el.closeDiff.addEventListener('click', () => el.diffModal.style.display = 'none');
+      el.exportBtn.addEventListener('click', exportDiffReport);
+      el.confirmAdminAuth.addEventListener('click', adminAuth);
+      el.cancelAdminAuth.addEventListener('click', () => el.adminModal.style.display = 'none');
+      el.closeAdminModal.addEventListener('click', () => el.adminModal.style.display = 'none');
+      el.addUserBtn.addEventListener('click', addUser);
+      el.confirmUser.addEventListener('click', saveUser);
+      el.cancelUser.addEventListener('click', () => el.userModal.style.display = 'none');
+      el.changeAdminPwdBtn.addEventListener('click', () => el.changeAdminPwdModal.style.display = 'flex');
+      el.confirmChangeAdminPwd.addEventListener('click', changeAdminPassword);
+      el.cancelChangeAdminPwd.addEventListener('click', () => el.changeAdminPwdModal.style.display = 'none');
+      el.changeStorePwdBtn.addEventListener('click', () => el.changeStorePwdModal.style.display = 'flex');
+      el.confirmChangeStorePwd.addEventListener('click', changeStorePassword);
+      el.cancelChangeStorePwd.addEventListener('click', () => el.changeStorePwdModal.style.display = 'none');
+      el.confirmResetStorePwd.addEventListener('click', resetStorePassword);
+      el.cancelResetStorePwd.addEventListener('click', () => el.resetStorePwdModal.style.display = 'none');
+      el.uploadQrcodeBtn.addEventListener('click', () => el.qrcodeFileInput.click());
+      el.qrcodeFileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) uploadQrcode(e.target.files[0]); });
+      el.saveContactBtn.addEventListener('click', saveContactInfo);
+      el.gotoLoginBtn.addEventListener('click', () => { el.expirePayModal.style.display = 'none'; forceLogout(); });
+      el.confirmExpireBtn.addEventListener('click', submitRenewalApply);
+      el.closeRenewalNotice.addEventListener('click', () => el.renewalNoticeModal.style.display = 'none');
+      el.passAudit.addEventListener('click', passAudit);
+      el.rejectAudit.addEventListener('click', rejectAudit);
+      el.cancelAudit.addEventListener('click', () => el.renewalAuditModal.style.display = 'none');
+      el.closeAuditResult.addEventListener('click', () => el.auditResultModal.style.display = 'none');
+      el.exportDataBtn.addEventListener('click', exportData);
+      el.importDataBtn.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => { if (e.target.files.length > 0) importData(e.target.files[0]); };
+        input.click();
+      });
+    }
+
+    async function init() {
+      await loadFromRepo();
+      bindEvents();
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>
+
+
+
+
