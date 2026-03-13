@@ -3,42 +3,42 @@
     {
       "id": "admin_1",
       "username": "admin",
-      "password": "admin123",
+      "password": "admin8835865",
       "role": "admin",
-      "expireDate": "2036-03-10",
-      "status": "enable"
-    },
-    {
-      "id": "user_1773392513982",
-      "username": "A00189",
-      "password": "123456",
-      "role": "user",
-      "expireDate": "2026-04-12",
-      "status": "enable"
-    },
-    {
-      "id": "user_1773392538902",
-      "username": "A00200",
-      "password": "123456",
-      "role": "user",
-      "expireDate": "2026-03-12",
+      "expireDate": "2030-01-01",
       "status": "enable"
     },
     {
       "username": "A00188",
       "password": "123456",
-      "expireDate": "2026-04-12",
+      "expireDate": "2026-03-31",
       "role": "user",
       "status": "enable",
-      "id": "user_1773394438230"
+      "id": "store_1"
     },
     {
-      "username": "A00221",
+      "username": "A00189",
       "password": "123456",
-      "expireDate": "2026-03-15",
+      "expireDate": "2026-03-12",
       "role": "user",
       "status": "enable",
-      "id": "user_1773395033518"
+      "id": "user_1773321739273"
+    },
+    {
+      "username": "A00187",
+      "password": "123456",
+      "expireDate": "2026-04-11",
+      "role": "user",
+      "status": "enable",
+      "id": "user_1773323709133"
+    },
+    {
+      "username": "A00191",
+      "password": "123456",
+      "expireDate": "2026-03-10",
+      "role": "user",
+      "status": "enable",
+      "id": "user_1773323733198"
     }
   ],
   "payQrcode": "",
@@ -46,9 +46,16 @@
   "contactInfo": "电话13800000000",
   "renewalLog": [
     {
-      "username": "A00200",
+      "username": "A00190",
+      "addDays": 180,
+      "auditTime": "2026-03-12 21:59:52",
+      "remark": "审核驳回",
+      "status": "rejected"
+    },
+    {
+      "username": "A00189",
       "addDays": 30,
-      "auditTime": "2026-03-13 17:35:04",
+      "auditTime": "2026-03-12 21:33:24",
       "remark": "审核驳回",
       "status": "rejected"
     }
@@ -57,87 +64,159 @@
   "useLog": [
     {
       "user": "admin",
-      "action": "导出数据备份",
-      "time": "2026-03-13 17:58:14",
-      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
-    },
-    {
-      "user": "admin",
       "action": "登录系统",
-      "time": "2026-03-13 17:57:39",
+      "time": "2026-03-13 18:51:24",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
-      "user": "admin",
-      "action": "登录系统",
-      "time": "2026-03-13 17:43:13",
-      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
-    },
-    {
-      "user": "admin",
-      "action": "登录系统",
-      "time": "2026-03-13 17:35:02",
-      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
-    },
-    {
-      "user": "admin",
+      "user": "A00187",
       "action": "退出系统",
-      "time": "2026-03-13 17:34:42",
+      "time": "2026-03-13 00:12:50",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
-      "user": "admin",
+      "user": "A00187",
+      "action": "上传配送单：配送收货单-明细数据.xls（35个商品）",
+      "time": "2026-03-13 00:12:44",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "A00187",
       "action": "登录系统",
-      "time": "2026-03-13 17:33:42",
+      "time": "2026-03-13 00:12:39",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
       "action": "导出数据备份",
-      "time": "2026-03-13 17:07:30",
+      "time": "2026-03-12 22:04:37",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
       "action": "登录系统",
-      "time": "2026-03-13 17:05:42",
+      "time": "2026-03-12 21:59:49",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
-      "action": "上传配送单：配送收货单-明细数据.xls",
-      "time": "2026-03-13 17:04:59",
+      "action": "导出数据备份",
+      "time": "2026-03-12 21:56:29",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
       "action": "登录系统",
-      "time": "2026-03-13 17:04:52",
+      "time": "2026-03-12 21:56:19",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "A00187",
+      "action": "退出系统",
+      "time": "2026-03-12 21:56:00",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "A00187",
+      "action": "登录系统",
+      "time": "2026-03-12 21:55:57",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
       "action": "退出系统",
-      "time": "2026-03-13 17:02:47",
-      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
-    },
-    {
-      "user": "admin",
-      "action": "新增门店账号：A00200",
-      "time": "2026-03-13 17:02:18",
-      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
-    },
-    {
-      "user": "admin",
-      "action": "新增门店账号：A00189",
-      "time": "2026-03-13 17:01:53",
+      "time": "2026-03-12 21:55:43",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
       "action": "登录系统",
-      "time": "2026-03-13 17:01:28",
+      "time": "2026-03-12 21:54:17",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "导出数据备份",
+      "time": "2026-03-12 21:34:02",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-12 21:33:17",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-12 21:32:19",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-12 21:21:46",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "上传配送单：配送收货单-明细数据.xls（35个商品）",
+      "time": "2026-03-11 23:58:49",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-11 23:58:28",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "退出系统",
+      "time": "2026-03-11 00:11:04",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-11 00:10:48",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:46:11",
+      "device": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/5"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:45:35",
+      "device": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/5"
+    },
+    {
+      "user": "admin",
+      "action": "核对商品：奥利奥可可脆卷（浓郁巧克力味）50g（条码：6901668936271，实到5件）",
+      "time": "2026-03-07 00:28:40",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "上传配送单：配送收货单-明细数据.xls（共36个商品）",
+      "time": "2026-03-07 00:28:28",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:28:23",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-07 00:16:40",
+      "device": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/5"
     }
   ]
 }
