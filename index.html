@@ -880,41 +880,76 @@ async function loadFromRepo() {
 
     // --------------- 原有功能函数保持不变 ---------------
     async function login() {
-      const username = el.loginUsername.value.trim();
-      const password = el.loginPassword.value.trim();
-      if (!username || !password) {
+    // --- 新增：登录前强制刷新数据 ---
+    // 为了确保验证用户时使用的是最新数据，这里重新执行一遍数据加载逻辑
+    // 这段代码与loadFromRepo函数的核心逻辑一致，但在这里直接执行以确保同步
+    try {
+        const timestamp = new Date().getTime();
+        const fetchUrl = `${REPO_CONFIG.readUrl}?v=${timestamp}`;
+        const response = await fetch(fetchUrl, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+
+        if (response.ok) {
+            const githubData = await response.json();
+            // 用GitHub的最新数据完全替换当前内存中的GLOBAL_DATA
+            GLOBAL_DATA = JSON.parse(JSON.stringify(githubData));
+            // 并立即保存到本地，确保本地数据也是最新的
+            localStorage.setItem('store_data_backup', JSON.stringify(GLOBAL_DATA));
+            sessionStorage.setItem('store_data_temp', JSON.stringify(GLOBAL_DATA));
+            console.log('登录时已从GitHub强制同步最新数据');
+        } else {
+            console.warn('GitHub读取失败，将使用本地缓存数据');
+            // 如果GitHub拉取失败，则不中断登录流程，继续使用内存中已有的数据
+        }
+    } catch (error) {
+        console.error('登录时同步GitHub数据失败，将使用本地缓存:', error);
+        // 如果GitHub拉取失败，则不中断登录流程，继续使用内存中已有的数据
+    }
+    // --- 新增结束 ---
+
+    // 以下是您原有的、完全不变的登录逻辑
+    const username = el.loginUsername.value.trim();
+    const password = el.loginPassword.value.trim();
+    if (!username || !password) {
         showLoginTip('用户名和密码不能为空');
         return;
-      }
-      // 查找账号
-      const user = GLOBAL_DATA.userList.find(u => u.username === username && u.password === password);
-      if (!user) {
+    }
+
+    // 此时，这里的 GLOBAL_DATA 一定是刚刚从GitHub获取的最新数据
+    const user = GLOBAL_DATA.userList.find(u => u.username === username && u.password === password);
+    if (!user) {
         showLoginTip('用户名或密码错误');
         return;
-      }
-      if (user.status === 'disable') {
+    }
+
+    if (user.status === 'disable') {
         showLoginTip('账号已被管理员禁用，请联系管理员');
         return;
-      }
-      if (checkUserExpire(user)) {
-  // 先完成登录状态赋值
-  LOCAL_STATE.currentUser = user;
-  LOCAL_STATE.isLogin = true;
-  // 再显示主页面（让系统拿到用户）
-  showMainPage();
-  // 最后弹出续费窗口
-  setTimeout(() => {
-    showExpirePayModal();
-  }, 500);
-  return;
-}
-      // 登录成功后，强制同步GitHub数据
-      LOCAL_STATE.currentUser = user;
-      LOCAL_STATE.isLogin = true;
-      await loadFromRepo(); // 新增：登录时自动同步最新数据
-      await recordUseLog('登录系统');
-      showMainPage();
     }
+
+    if (checkUserExpire(user)) {
+        LOCAL_STATE.currentUser = user;
+        LOCAL_STATE.isLogin = true;
+        showMainPage();
+        setTimeout(() => {
+            showExpirePayModal();
+        }, 500);
+        return;
+    }
+
+    LOCAL_STATE.currentUser = user;
+    LOCAL_STATE.isLogin = true;
+
+    await recordUseLog('登录系统');
+    showMainPage();
+}
 
     function logout() {
       if (confirm('确定退出？当前点货数据会保留')) {
