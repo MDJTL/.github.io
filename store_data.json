@@ -96,6 +96,12 @@
   "useLog": [
     {
       "user": "admin",
+      "action": "退出系统",
+      "time": "2026-03-14 13:36:09",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
       "action": "核对商品：瑞丽江欢乐家庭装芒果茶1.5L（配送6，实到1）",
       "time": "2026-03-14 13:35:55",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
