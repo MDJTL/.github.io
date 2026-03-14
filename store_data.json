@@ -17,6 +17,12 @@
   "useLog": [
     {
       "user": "admin",
+      "action": "退出系统",
+      "time": "2026-03-14 14:43:39",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
       "action": "删除当前配送单",
       "time": "2026-03-14 14:40:38",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
