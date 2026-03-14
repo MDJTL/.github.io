@@ -17,6 +17,12 @@
   "useLog": [
     {
       "user": "admin",
+      "action": "上传配送单：配送收货单-明细数据111.xls（131个商品）",
+      "time": "2026-03-14 14:40:24",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
       "action": "登录系统",
       "time": "2026-03-14 14:38:51",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
