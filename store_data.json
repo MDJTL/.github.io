@@ -7,22 +7,6 @@
       "role": "admin",
       "expireDate": "2036-03-11",
       "status": "enable"
-    },
-    {
-      "username": "A00188",
-      "password": "123456",
-      "expireDate": "2026-04-13",
-      "role": "user",
-      "status": "enable",
-      "id": "user_1773469439956"
-    },
-    {
-      "username": "A00189",
-      "password": "123456",
-      "expireDate": "2026-03-12",
-      "role": "user",
-      "status": "enable",
-      "id": "user_1773469454675"
     }
   ],
   "payQrcode": "",
@@ -33,14 +17,26 @@
   "useLog": [
     {
       "user": "admin",
-      "action": "导出数据备份",
-      "time": "2026-03-14 14:24:25",
+      "action": "登录系统",
+      "time": "2026-03-14 14:33:50",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     },
     {
       "user": "admin",
       "action": "登录系统",
-      "time": "2026-03-14 14:21:20",
+      "time": "2026-03-14 14:33:50",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-14 14:33:50",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    },
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-14 14:33:50",
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
     }
   ]
