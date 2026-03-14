@@ -14,5 +14,12 @@
   "contactInfo": "电话13800000000",
   "renewalLog": [],
   "unreadRenewal": [],
-  "useLog": []
+  "useLog": [
+    {
+      "user": "admin",
+      "action": "登录系统",
+      "time": "2026-03-14 14:16:58",
+      "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb"
+    }
+  ]
 }
