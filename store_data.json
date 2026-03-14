@@ -7,6 +7,14 @@
       "role": "admin",
       "expireDate": "2036-03-11",
       "status": "enable"
+    },
+    {
+      "username": "A00188",
+      "password": "123456",
+      "expireDate": "2026-04-13",
+      "role": "user",
+      "status": "enable",
+      "id": "user_1773469439956"
     }
   ],
   "payQrcode": "",
